@@ -3,6 +3,7 @@ library(ggplot2)
 library(dplyr)
 library(tidyr)
 library(stringr)
+library(ggh4x)
 
 xl_file = "gonad_egg_count.csv"
 df <- read.csv(xl_file)
@@ -100,3 +101,79 @@ ggplot(data_normalized, aes(normalized_area_bycond, egg_count, colour = as.facto
 
 
 
+
+
+
+
+#######Plots for paper
+df_bodyeggs <- df_bodyeggs %>%
+  mutate(
+    ancestry = case_when(
+      condition.x %in% c("a", "b") ~ "agar",
+      TRUE ~ "scaffold"
+    ),
+    growing = case_when(
+      condition.x %in% c("a", "d") ~ "agar",
+      TRUE ~ "scaffold"
+    )
+  ) %>%
+  mutate(
+    ancestry = case_when(
+      condition.x %in% c("a", "b") ~ "agar",
+      TRUE ~ "scaffold"
+    ),
+    growing = case_when(
+      condition.x %in% c("a", "d") ~ "agar",
+      TRUE ~ "scaffold"
+    )
+  )
+
+
+
+###Eggs in gonads
+png("eggs_in_gonads_by_area_day.png", width = 2200, height = 900)
+
+
+ggplot(df_bodyeggs, aes(x = norm_area, y = egg_count, color = condition.x, shape = condition.x)) +
+  geom_point(size = 5, alpha = 0.9) +
+  facet_grid(~ day.y, scales = "fixed", labeller = labeller(day.y = c("1" = "Day 1", "2" = "Day 2", "3" = "Day 3", "4" = "Day 4", "5" = "Day 5", "6" = "Day 6"))) +
+  labs(
+    x = "Normalized body area",
+    y = "Number of eggs in gonads"
+  ) +
+  scale_color_brewer(palette = "Set2", 
+                     labels = c("a" = "Agar ancestry, Agar growth",
+                                "b" = "Agar ancestry, Scaffold growth",
+                                "c" = "Scaffold ancestry, Scaffold growth",
+                                "d" = "Scaffold ancestry, Agar growth"),
+                     name = "Ancestry and Growth Condition") +  # Changed legend title
+  scale_shape_manual(values = c(16, 17, 18, 15),
+                     labels = c("a" = "Agar ancestry, Agar growth",
+                                "b" = "Agar ancestry, Scaffold growth",
+                                "c" = "Scaffold ancestry, Scaffold growth",
+                                "d" = "Scaffold ancestry, Agar growth"),
+                     name = "Ancestry and Growth Condition") +
+  theme_minimal() +
+  theme(
+    text = element_text(size = 14),
+    axis.text.y = element_text(size = 18),
+    axis.text.x = element_text(size = 20),
+    axis.title = element_text(size = 22, face = "plain", margin = margin(t = 22, b = 20)),
+    axis.title.x = element_text(margin = margin(t = 20)),
+    axis.title.y = element_text(margin = margin(r = 20)),
+    panel.background = element_rect(fill = "white", color = NA),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.spacing = unit(1.0, "lines"),  # Increased spacing between facets
+    strip.background = element_rect(fill = "gray95", color = NA),  # Light gray background for facet labels
+    strip.text = element_text(size = 18, face = "plain"),
+    strip.text.x = element_text(margin = margin(t = 5, b = 5)),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.y = element_line(color = "gray90"),
+    panel.grid.minor.y = element_line(color = "gray95"),
+    legend.title = element_text(size = 16),
+    legend.text = element_text(size = 14)
+  ) +
+  coord_cartesian(xlim = range(df_bodyeggs$norm_area, na.rm = TRUE))
+
+dev.off()

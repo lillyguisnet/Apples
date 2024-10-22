@@ -3,6 +3,7 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 library(ggplot2)
 library(dplyr)
 library(openxlsx)
+library(ggh4x)
 
 xl_file <- "pumping_data.xlsx"
 df <- as.data.frame(read.xlsx(xl_file))
@@ -96,7 +97,7 @@ table_data <- data.frame(
 # Add ancestry_habitat and growing_habitat columns to df based on condition
 df$ancestry_habitat <- ifelse(df$condition %in% c("a", "b"), "Agar ancestry", "Scaffold ancestry")
 df$growing_habitat <- ifelse(df$condition %in% c("a", "d"), "agar", "scaffold")
-)
+
 
 # Create a grob (graphical object) for the horizontal table without column names
 table_grob <- tableGrob(table_data, rows = NULL, cols = NULL, theme = ttheme_minimal(
@@ -132,50 +133,57 @@ combined_plot <- grid.arrange(
 # Display the combined plot
 print(combined_plot)
 
-# Scientific, minimal, simplistic ggplot theme with facet borders
-scientific_theme <- theme_minimal() +
+
+# Define colors for agar and scaffold
+agar_color <- "#66C2A5"      # Light green from Set2 palette
+scaffold_color <- "#FC8D62"  # Light orange from Set2 palette
+
+# Create the plot
+p <- ggplot(df, aes(x = growing_habitat, y = nb_pumps, fill = as.factor(growing_habitat))) +
+  geom_boxplot() +
+  facet_wrap2(
+    ~ ancestry_habitat,
+    scales = "free_x",
+    ncol = 2,
+    strip = strip_themed(
+      background_x = list(
+        element_rect(fill = agar_color, color = NA),
+        element_rect(fill = scaffold_color, color = NA)
+      ),
+      text_x = list(
+        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 8)),
+        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 5))
+      )
+    )
+  ) +
+  labs(
+    y = "Number of pumps/10 sec",
+    x = "Growing condition",
+  ) +
+  scale_fill_manual(values = c("agar" = agar_color, "scaffold" = scaffold_color)) +
+  scale_x_discrete(labels = c("agar" = "Agar", "scaffold" = "Scaffold")) +  # Rename x axis labels
+  theme_minimal() +
   theme(
-    text = element_text(family = "Arial", size = 12),
-    axis.text = element_text(size = 10),
-    axis.title = element_text(size = 12, face = "bold"),
-    axis.line = element_line(color = "black", size = 0.5),
-    axis.ticks = element_line(color = "black", size = 0.5),
-    panel.grid.major = element_line(color = "grey90", size = 0.2),
-    panel.grid.minor = element_blank(),
-    legend.position = "bottom",
-    plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
-    plot.margin = margin(t = 10, r = 10, b = 10, l = 10),
-    strip.background = element_rect(fill = "grey95", color = "black"),
-    strip.text = element_text(size = 12, face = "bold"),
-    panel.border = element_rect(color = "black", fill = NA, size = 0.5),
-    panel.spacing = unit(0.5, "lines")
+    text = element_text(size = 14),
+    axis.text.y = element_text(size = 18),  # Increased from 12 to 16
+    axis.text.x = element_text(size = 20),  # Increased from 12 to 16
+    axis.title = element_text(size = 22, face = "plain", margin = margin(t = 22, b = 20)),  # Added margin
+    axis.title.x = element_text(margin = margin(t = 20)),  # Added extra margin for x-axis title
+    axis.title.y = element_text(margin = margin(r = 20)),  # Added extra margin for y-axis title
+    legend.position = "none",
+    panel.background = element_rect(fill = "white", color = NA),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.spacing = unit(0.5, "lines"),
+    strip.background = element_blank(),
+    strip.text = element_text(size = 18, face = "bold"),
+    strip.text.x = element_text(margin = margin(t = 5, b = 5)),  # Reduced top and bottom margins
+    aspect.ratio = 3,
+    plot.margin = unit(c(0.25, 0.25, 0.25, 0.25), "cm"),  # Remove margins around the plot
+    panel.grid.major.x = element_blank(),  # Remove x axis grid lines
+    panel.grid.minor.x = element_blank()   # Remove minor x axis grid lines if present
   )
 
-# Update your existing plot with facets
-p <- ggplot(df, aes(growing_habitat, nb_pumps, fill = as.factor(growing_habitat))) +
-  geom_boxplot() +
-  #geom_jitter(aes(shape = as.factor(ancestry_habitat), color = as.factor(growing_habitat)), size = 3) +  # Increased point size
-  facet_wrap(~ancestry_habitat, scales = "free_x", ncol = 2) +
-  labs(
-    y = "Number of pumps/10sec",
-    x = "Growing Condition",
-    # title = "Pump Analysis by Ancestry and Growing Condition"
-  ) +
-  scale_fill_brewer(palette = "Set2") +
-  theme(
-    text = element_text(size = 14),  # Increased overall font size
-    axis.text = element_text(size = 12),  # Increased axis text size
-    axis.title = element_text(size = 16, face = "bold"),  # Increased axis title size
-    strip.text = element_text(size = 14, face = "bold"),  # Increased facet label size
-    legend.position = "none",  # Remove legend
-    panel.background = element_blank(),  # Remove panel background
-    plot.background = element_blank(),  # Remove plot background
-    panel.spacing = unit(2, "lines")  # Increase space between facets
-  )
-# scientific_theme
-p
-# Display the plot
 print(p)
 
-# Save the plot
-ggsave("scientific_pump_analysis_faceted_with_borders.png", p, width = 10, height = 8, dpi = 300)
+# Save the plot with no white space
+ggsave("C:/Users/aurel/Documents/Apples/pumping/pumping_analysis_paper.png", p, dpi = 300, bg = "white", width = 8, height = 12, units = "in", limitsize = FALSE)

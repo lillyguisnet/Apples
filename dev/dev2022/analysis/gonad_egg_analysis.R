@@ -171,8 +171,13 @@ ggplot(df_bodyeggs, aes(x = norm_area, y = egg_count, color = condition.x, shape
     panel.grid.minor.x = element_blank(),
     panel.grid.major.y = element_line(color = "gray90"),
     panel.grid.minor.y = element_line(color = "gray95"),
-    legend.title = element_text(size = 16),
-    legend.text = element_text(size = 14)
+    legend.title = element_text(size = 20),
+    legend.text = element_text(size = 18),
+    legend.position = c(0.01, 0.95),  # Move legend to top left
+    legend.justification = c(0, 1),   # Align legend to top left
+    legend.background = element_rect(fill = "white", color = NA),  # Add white background to legend
+    legend.key.height = unit(1.5, "lines"),  # Increase spacing between legend items
+    legend.margin = margin(t = 10, r = 10, b = 10, l = 10)  # Add margin around legend
   ) +
   coord_cartesian(xlim = range(df_bodyeggs$norm_area, na.rm = TRUE))
 

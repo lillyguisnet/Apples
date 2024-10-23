@@ -3,6 +3,7 @@ library(ggplot2)
 library(dplyr)
 library(tidyr)
 library(stringr)
+library(ggh4x)
 
 xl_file = "allmasks_removeoverlap_normredness_nosaturation_metrics.csv"
 df <- read.csv(xl_file)
@@ -47,6 +48,8 @@ df_norm <- df_dist %>%
   
   mutate(minstd = mean_redness - std_dev_redness) %>%
   mutate(maxstd = mean_redness + std_dev_redness)
+
+
 
 ggplot(df_norm, aes(condition, std_dev_redness, colour = as.factor(condition))) +
   geom_boxplot()
@@ -301,3 +304,76 @@ ggplot(df_norm, aes(norm_centered_length, norm_medial_axis_distances_sorted, col
 
 
 
+######Plot for paper######
+df_summaryred <- df_summaryred %>%
+  mutate(
+    ancestry = case_when(
+      condition %in% c("a", "b") ~ "agar",
+      TRUE ~ "scaffold"
+    ),
+    growing = case_when(
+      condition %in% c("a", "d") ~ "agar",
+      TRUE ~ "scaffold"
+    )
+  ) %>%
+  mutate(
+    ancestry = case_when(
+      condition %in% c("a", "b") ~ "agar",
+      TRUE ~ "scaffold"
+    ),
+    growing = case_when(
+      condition %in% c("a", "d") ~ "agar",
+      TRUE ~ "scaffold"
+    )
+  )
+
+
+
+png("norm_redness_length_paper.png", width = 1200, height = 1200)
+
+agar_color <- "#66C2A5"      # Light green from Set2 palette
+scaffold_color <- "#FC8D62"  # Light orange from Set2 palette
+
+ggplot(df_summaryred, aes(x = norm_length_bymask, y = norm_mean_redness, color = condition)) +
+  geom_point(size = 4, show.legend = FALSE) +
+  facet_nested(
+    ~ ancestry + growing,
+    scales = "fixed",
+    labeller = labeller(
+      ancestry = c("agar" = "Agar ancestry", "scaffold" = "Scaffold ancestry"),
+      growing = c("agar" = "Agar growth", "scaffold" = "Scaffold growth")
+    ),
+    strip = strip_nested(
+      background_x = list(
+        element_rect(fill = agar_color, color = "white", linewidth = 1.5),
+        element_rect(fill = scaffold_color, color = "white", linewidth = 1.5)
+      ),
+      text_x = list(
+        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 8)),
+        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 5))
+      )
+    )
+  ) +
+  labs(
+    x = "Normalized body length",
+    y = "Normalized mean redness"
+  ) +
+  scale_color_manual(values = c("a" = agar_color, "b" = scaffold_color, "c" = scaffold_color, "d" = agar_color)) +
+  theme_minimal() +
+  theme(
+    text = element_text(size = 14),
+    axis.text = element_text(size = 18),
+    axis.title = element_text(size = 22, face = "plain", margin = margin(t = 22, b = 20)),
+    axis.title.x = element_text(margin = margin(t = 20)),  # Increased top margin for x-axis title
+    axis.title.y = element_text(margin = margin(r = 20)),  # Increased right margin for y-axis title
+    panel.background = element_rect(fill = "white", color = NA),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.spacing = unit(2, "lines"),  # Increased spacing between facets
+    strip.background = element_blank(),
+    strip.text = element_text(size = 18, face = "bold"),
+    panel.grid.major = element_line(color = "gray90"),
+    panel.grid.minor = element_line(color = "gray95")
+  ) +
+  coord_cartesian(xlim = range(df_summaryred$norm_length_bymask, na.rm = TRUE))
+
+dev.off()

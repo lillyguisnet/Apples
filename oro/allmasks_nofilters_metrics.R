@@ -328,6 +328,14 @@ df_summaryred <- df_summaryred %>%
   )
 
 
+sample_sizes <- df_summaryred %>%
+  group_by(ancestry, growing) %>%
+  summarise(normed_length = mean(norm_mean_redness),
+            n = n_distinct(norm_mean_redness))
+
+write.table(sample_sizes, "clipboard", sep="\t", row.names=FALSE)
+print(sample_sizes)
+
 
 png("norm_redness_length_paper.png", width = 1200, height = 1200)
 

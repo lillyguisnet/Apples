@@ -131,7 +131,7 @@ df_bodyeggs <- df_bodyeggs %>%
 
 
 ###Eggs in gonads
-png("eggs_in_gonads_by_area_day.png", width = 2200, height = 900)
+png("eggs_in_gonads_by_area_day.png", width = 1900, height = 900)
 
 
 ggplot(df_bodyeggs, aes(x = norm_area, y = egg_count, color = condition.x, shape = condition.x)) +

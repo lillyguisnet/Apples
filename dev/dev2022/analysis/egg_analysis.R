@@ -57,6 +57,14 @@ df_norm <- df_norm %>%
 
   
 ###Egg area by condition
+sample_sizes <- df_norm %>%
+  group_by(ancestry, growing) %>%
+  summarise(normed_length = mean(norm_area),
+            n = n_distinct(norm_area))
+
+write.table(sample_sizes, "clipboard", sep="\t", row.names=FALSE)
+print(sample_sizes)
+
 png("norm_egg_area_condition_paper.png", width = 750, height = 1100)
 
 agar_color <- "#66C2A5"      # Light green from Set2 palette

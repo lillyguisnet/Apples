@@ -235,8 +235,18 @@ df_norm <- df_norm %>%
 
 
 
-
 ###Length by day
+
+# Calculate sample sizes for each condition
+sample_sizes <- df_norm %>%
+  group_by(ancestry, growing, day) %>%
+  summarise(normed_length = mean(norm_pruned_medialaxis_length),
+            n = n_distinct(norm_pruned_medialaxis_length))
+
+write.table(sample_sizes, "clipboard", sep="\t", row.names=FALSE)
+print("Sample sizes by condition and day:")
+print(sample_sizes)
+
 png("norm_body_length_day_paper.png", width = 1100, height = 900)
 
 agar_color <- "#66C2A5"      # Light green from Set2 palette
@@ -244,6 +254,7 @@ scaffold_color <- "#FC8D62"  # Light orange from Set2 palette
 
 ggplot(df_norm, aes(x = as.factor(day), y = norm_pruned_medialaxis_length, fill = condition)) +
   geom_boxplot() +
+  #geom_jitter() +
   facet_nested(
     ~ ancestry + growing,
     scales = "free_x",
@@ -303,6 +314,15 @@ dev.off()
 
 
 ###Mean width by day
+sample_sizes <- df_norm %>%
+  group_by(ancestry, growing, day) %>%
+  summarise(normed_length = mean(norm_mean_wormwidth),
+            n = n_distinct(norm_mean_wormwidth))
+
+write.table(sample_sizes, "clipboard", sep="\t", row.names=FALSE)
+print(sample_sizes)
+
+
 png("norm_mean_body_width_day_paper.png", width = 1100, height = 900)
 
 agar_color <- "#66C2A5"      # Light green from Set2 palette
@@ -709,13 +729,13 @@ dev.off()
 
 
 ###Length/width - by day
-png("norm_body_length_width_by_day.png", width = 1200, height = 800)
+png("norm_body_length_width_by_day_paper.png", width = 1200, height = 800)
 
 agar_color <- "#66C2A5"      # Light green from Set2 palette
 scaffold_color <- "#FC8D62"  # Light orange from Set2 palette
 
 ggplot(df_headtotail, aes(x = norm_centered_length, y = corrected_medial_axis_distances, color = as.factor(day))) +
-  geom_point(alpha = 0.6) +
+  geom_point() +
   facet_nested(
     ~ ancestry + growing,
     scales = "fixed",  # Changed from "free_x" to "fixed" for same x-axis across all subplots
@@ -770,3 +790,4 @@ ggplot(df_headtotail, aes(x = norm_centered_length, y = corrected_medial_axis_di
   scale_x_continuous(breaks = c(-4, -2, 0, 2, 4))  # Set x-axis labels to -4, -2, 0, 2, 4
 
 dev.off()
+

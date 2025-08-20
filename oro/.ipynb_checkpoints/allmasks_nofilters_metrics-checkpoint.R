@@ -342,9 +342,8 @@ png("norm_redness_length_paper.png", width = 1200, height = 1200)
 agar_color <- "#66C2A5"      # Light green from Set2 palette
 scaffold_color <- "#FC8D62"  # Light orange from Set2 palette
 
-
-p <- ggplot(df_summaryred, aes(x = norm_length_bymask, y = norm_mean_redness, color = condition)) +
-  geom_point(size = 0.5, show.legend = FALSE) +
+ggplot(df_summaryred, aes(x = norm_length_bymask, y = norm_mean_redness, color = condition)) +
+  geom_point(size = 4, show.legend = FALSE) +
   facet_nested(
     ~ ancestry + growing,
     scales = "fixed",
@@ -354,12 +353,12 @@ p <- ggplot(df_summaryred, aes(x = norm_length_bymask, y = norm_mean_redness, co
     ),
     strip = strip_nested(
       background_x = list(
-        element_rect(fill = agar_color, color = "white", linewidth = 0.8),
-        element_rect(fill = scaffold_color, color = "white", linewidth = 0.8)
+        element_rect(fill = agar_color, color = "white", linewidth = 1.5),
+        element_rect(fill = scaffold_color, color = "white", linewidth = 1.5)
       ),
       text_x = list(
-        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 2, b = 2)),
-        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 2, b = 2))
+        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 8)),
+        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 5))
       )
     )
   ) +
@@ -370,27 +369,19 @@ p <- ggplot(df_summaryred, aes(x = norm_length_bymask, y = norm_mean_redness, co
   scale_color_manual(values = c("a" = agar_color, "b" = scaffold_color, "c" = scaffold_color, "d" = agar_color)) +
   theme_minimal() +
   theme(
-    text = element_text(size = 8),
-    axis.text = element_text(size = 8, color = "black"),
-    #axis.title = element_text(size = 8, face = "plain", margin = margin(t = 22, b = 20)),
-    axis.title.x = element_text(margin = margin(t = 2)),  # Increased top margin for x-axis title
-    axis.title.y = element_text(margin = margin(r = 2)),  # Increased right margin for y-axis title
+    text = element_text(size = 14),
+    axis.text = element_text(size = 18),
+    axis.title = element_text(size = 22, face = "plain", margin = margin(t = 22, b = 20)),
+    axis.title.x = element_text(margin = margin(t = 20)),  # Increased top margin for x-axis title
+    axis.title.y = element_text(margin = margin(r = 20)),  # Increased right margin for y-axis title
     panel.background = element_rect(fill = "white", color = NA),
     plot.background = element_rect(fill = "white", color = NA),
-    panel.spacing = unit(0.1, "lines"),  # Increased spacing between facets
+    panel.spacing = unit(2, "lines"),  # Increased spacing between facets
     strip.background = element_blank(),
-    strip.text.x = element_text(margin = margin(t = 0, b = 0)),
-    plot.margin = unit(c(0, 0, 0, 0), "mm"),
-    #strip.text = element_text(size = 18, face = "bold"),
-    #panel.grid.major = element_line(color = "gray90"),
-    panel.grid.minor = element_blank()
+    strip.text = element_text(size = 18, face = "bold"),
+    panel.grid.major = element_line(color = "gray90"),
+    panel.grid.minor = element_line(color = "gray95")
   ) +
-  scale_x_continuous(breaks = c(0, 2, 4, 6), labels = c("0", "2", "4", "6")) +
   coord_cartesian(xlim = range(df_summaryred$norm_length_bymask, na.rm = TRUE))
-
-ggsave("C:/Users/aurel/Documents/Apples/oro/norm_redness_length_paper.pdf", p, dpi = 300, bg = "white", width = 100, height = 80, units = "mm")
-
-
-
 
 dev.off()

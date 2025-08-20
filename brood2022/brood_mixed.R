@@ -127,8 +127,8 @@ agar_color <- "#66C2A5"      # Light green from Set2 palette
 scaffold_color <- "#FC8D62"  # Light orange from Set2 palette
 
 # Create the plot
-ggplot(df_growing, aes(x = growing, y = total_eggs, fill = as.factor(growing))) +
-  geom_boxplot() +
+p <- ggplot(df_growing, aes(x = growing, y = total_eggs, fill = as.factor(growing))) +
+  geom_boxplot(lwd = 0.1, outlier.size = 0.01) +
   facet_wrap2(
     ~ ancestry,
     scales = "free_x",
@@ -139,38 +139,38 @@ ggplot(df_growing, aes(x = growing, y = total_eggs, fill = as.factor(growing))) 
         element_rect(fill = scaffold_color, color = NA)
       ),
       text_x = list(
-        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 8)),
-        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 5))
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 1, b = 2, l = 1, r = 1)),
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 1, b = 0, l = 1, r = 1))
       )
     ),
-    labeller = as_labeller(c("agar" = "Agar ancestry", "scaffold" = "Scaffold ancestry"))
+    labeller = as_labeller(c("agar" = "Agar\nancestry", "scaffold" = "Scaffold\nancestry"))
   ) +
   labs(
     y = "Total brood size",
-    x = "Growing condition",
+    x = "Growing habitat",
   ) +
   scale_fill_manual(values = c("agar" = agar_color, "scaffold" = scaffold_color)) +
   theme_minimal() +
   theme(
-    text = element_text(size = 14),
-    axis.text.y = element_text(size = 18),
-    axis.text.x = element_text(size = 20),
-    axis.title = element_text(size = 22, face = "plain", margin = margin(t = 22, b = 20)),
-    axis.title.x = element_text(margin = margin(t = 20)),
-    axis.title.y = element_text(margin = margin(r = 20)),
+    text = element_text(size = 8),
+    axis.text.y = element_text(size = 8, color = "black"),
+    axis.text.x = element_text(size = 8, color = "black", angle = 45, hjust = 1, margin = margin(t = -4, b = 0)),
+    #axis.title = element_text(size = 8, face = "plain", margin = margin(t = 22, b = 20)),
+    axis.title.x = element_text(margin = margin(t = 2)),
+    axis.title.y = element_text(margin = margin(r = 2)),
     legend.position = "none",
     panel.background = element_rect(fill = "white", color = NA),
     plot.background = element_rect(fill = "white", color = NA),
-    panel.spacing = unit(0.5, "lines"),
+    #panel.spacing = unit(0.5, "lines"),
     strip.background = element_blank(),
-    strip.text = element_text(size = 18, face = "bold"),
-    strip.text.x = element_text(margin = margin(t = 5, b = 5)),
-    aspect.ratio = 3,
-    plot.margin = unit(c(0.25, 0.25, 0.25, 0.25), "cm"),
+    #strip.text = element_text(size = 18, face = "bold"),
+    strip.text.x = element_text(margin = margin(t = 0, b = 0)),
+    #aspect.ratio = 3,
+    plot.margin = unit(c(0, 0, 0, 0), "mm"),
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank(),
     panel.grid.minor.y = element_blank(),
-    panel.grid.major.y = element_line(color = "gray90")
+    #panel.grid.major.y = element_blank()
   ) +
   scale_x_discrete(labels = c("agar" = "Agar", "scaffold" = "Scaffold")) +
   scale_y_continuous(
@@ -178,6 +178,10 @@ ggplot(df_growing, aes(x = growing, y = total_eggs, fill = as.factor(growing))) 
     breaks = seq(100, 400, by = 50),  # Set breaks every 50 units
     labels = scales::number_format(accuracy = 1)  # Format labels without decimal places
   )
+
+ggsave("C:/Users/aurel/Documents/Apples/brood2022/brood_results_growing_paper.pdf", p, dpi = 300, bg = "white", width = 35, height = 60, units = "mm")
+
+
 
 dev.off()
 
@@ -209,24 +213,24 @@ png("brood_results_experimental_paper.png", width = 650, height = 900)
 agar_color <- "#66C2A5"  # Light green from Set2 palette
 scaffold_color <- "#FC8D62"  # Light orange from Set2 palette
 
-ggplot(df_experimental, aes(x = experimental, y = total_eggs, fill = as.factor(experimental))) +
-  geom_boxplot() +
+p <- ggplot(df_experimental, aes(x = experimental, y = total_eggs, fill = as.factor(experimental))) +
+  geom_boxplot(lwd = 0.1, outlier.size = 0.01) +
   facet_nested(
     ~ ancestry + growing,
     scales = "free_x",
     nest_line = element_line(color = "black"),
     labeller = labeller(
-      ancestry = c("agar" = "Agar ancestry", "scaffold" = "Scaffold ancestry"),
-      growing = c("agar" = "Agar growth", "scaffold" = "Scaffold growth")
+      ancestry = c("agar" = "Agar\nancestry", "scaffold" = "Scaffold\nancestry"),
+      growing = c("agar" = "Agar\ngrowth", "scaffold" = "Scaffold\ngrowth")
     ),
     strip = strip_nested(
       background_x = list(
-        element_rect(fill = agar_color, color = "white", linewidth = 1.5),
-        element_rect(fill = scaffold_color, color = "white", linewidth = 1.5)
+        element_rect(fill = agar_color, color = "white", linewidth = 0.8),
+        element_rect(fill = scaffold_color, color = "white", linewidth = 0.8)
       ),
       text_x = list(
-        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 8)),
-        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 5))
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 2, b = 2)),
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 2, b = 2))
       )
     )
   ) +
@@ -237,25 +241,25 @@ ggplot(df_experimental, aes(x = experimental, y = total_eggs, fill = as.factor(e
   scale_fill_manual(values = c("agar" = agar_color, "scaffold" = scaffold_color)) +
   theme_minimal() +
   theme(
-    text = element_text(size = 14),
-    axis.text.y = element_text(size = 18),
-    axis.text.x = element_text(size = 20),
-    axis.title = element_text(size = 22, face = "plain", margin = margin(t = 22, b = 20)),
-    axis.title.x = element_text(margin = margin(t = 20)),
-    axis.title.y = element_text(margin = margin(r = 20)),
+    text = element_text(size = 8),
+    axis.text.y = element_text(size = 8, color = "black"),
+    axis.text.x = element_text(size = 8, color = "black", angle = 45, hjust = 1, margin = margin(t = -4, b = 0)),
+    #axis.title = element_text(size = 8, face = "plain", margin = margin(t = 22, b = 20)),
+    axis.title.x = element_text(margin = margin(t = 2)),
+    axis.title.y = element_text(margin = margin(r = 2)),
     legend.position = "none",
     panel.background = element_rect(fill = "white", color = NA),
     plot.background = element_rect(fill = "white", color = NA),
-    panel.spacing = unit(0.5, "lines"),
+    #panel.spacing = unit(0.5, "lines"),
     strip.background = element_blank(),
-    strip.text = element_text(size = 18, face = "bold"),
-    strip.text.x = element_text(margin = margin(t = 5, b = 5)),
-    aspect.ratio = 3,
-    plot.margin = unit(c(0.25, 0.25, 0.25, 0.25), "cm"),
+    #strip.text = element_text(size = 18, face = "bold"),
+    strip.text.x = element_text(margin = margin(t = 0, b = 0)),
+    #aspect.ratio = 3,
+    plot.margin = unit(c(0, 0, 0, 0), "mm"),
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank(),
     panel.grid.minor.y = element_blank(),
-    panel.grid.major.y = element_line(color = "gray90")
+    #panel.grid.major.y = element_line(color = "gray90")
   ) +
   scale_x_discrete(labels = c("agar" = "Agar", "scaffold" = "Scaffold")) +
   scale_y_continuous(
@@ -263,6 +267,12 @@ ggplot(df_experimental, aes(x = experimental, y = total_eggs, fill = as.factor(e
     breaks = seq(100, 400, by = 50),  # Set breaks every 50 units
     labels = scales::number_format(accuracy = 1)  # Format labels without decimal places
   )
+
+
+ggsave("C:/Users/aurel/Documents/Apples/brood2022/brood_results_experimental_paper.pdf", p, dpi = 300, bg = "white", width = 35, height = 67, units = "mm")
+
+
+
 
 dev.off()
 
@@ -295,11 +305,26 @@ agar_color <- "#66C2A5"  # Light green from Set2 palette
 scaffold_color <- "#FC8D62"  # Light orange from Set2 palette
 facet_color <- "#F0F0F0"  # Pale gray for facet rectangle
 
-ggplot(df_joined %>% filter(group %in% c("agar:agar:agar", "scaffold:scaffold:scaffold")), 
+p <- ggplot(df_joined %>% filter(group %in% c("agar:agar:agar", "scaffold:scaffold:scaffold")), 
        aes(x = group, y = eggs, fill = group)) +
-  geom_boxplot() +
-  facet_wrap(~ day, ncol = 4, scales = "fixed", 
-             labeller = labeller(day = function(x) paste("Day", x))) +
+  geom_boxplot(lwd = 0.1, outlier.size = 0.01) +
+  facet_wrap2(~ day, ncol = 4, scales = "fixed", 
+            labeller = labeller(day = function(x) paste("Day", x)),
+            strip = strip_themed(
+      background_x = list(
+        element_rect(fill = facet_color, color = NA),
+        element_rect(fill = facet_color, color = NA),
+        element_rect(fill = facet_color, color = NA),
+        element_rect(fill = facet_color, color = NA)
+      ),
+      text_x = list(
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 2, b = 2)),
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 2, b = 2)),
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 2, b = 2)),
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 2, b = 2))
+      )
+    )
+             ) +
   labs(
     x = "Growing and ancestry habitat",
     y = "Number of offspring per day"
@@ -307,25 +332,30 @@ ggplot(df_joined %>% filter(group %in% c("agar:agar:agar", "scaffold:scaffold:sc
   scale_fill_manual(values = c("agar:agar:agar" = agar_color, "scaffold:scaffold:scaffold" = scaffold_color)) +
   theme_minimal() +
   theme(
-    text = element_text(size = 14),
-    axis.text.y = element_text(size = 22),
-    axis.text.x = element_text(size = 22),
-    axis.title = element_text(size = 26, face = "plain", margin = margin(t = 22, b = 20)),
-    axis.title.x = element_text(margin = margin(t = 20)),
-    axis.title.y = element_text(size = 28, margin = margin(r = 20)),  # Increased y-axis title size
+    text = element_text(size = 8),
+    axis.text.y = element_text(size = 8, color = "black"),
+    axis.text.x = element_text(size = 8, color = "black", angle = 45, hjust = 1, margin = margin(t = -4, b = 0)),
+    #axis.title = element_text(size = 8, face = "plain", margin = margin(t = 22, b = 20)),
+    axis.title.x = element_text(margin = margin(t = 2)),
+    axis.title.y = element_text(margin = margin(r = 2)),  # Increased y-axis title size
     legend.position = "none",
     panel.background = element_rect(fill = "white", color = NA),
     plot.background = element_rect(fill = "white", color = NA),
     panel.spacing = unit(0.5, "lines"),
     strip.background = element_rect(fill = facet_color, color = NA),  # Add pale gray facet rectangle
-    strip.text = element_text(size = 18, face = "plain"),
-    strip.text.x = element_text(margin = margin(t = 5, b = 5)),
+    #strip.text = element_text(size = 18, face = "plain"),
+    strip.text.x = element_text(margin = margin(t = 0, b = 0)),
+    plot.margin = unit(c(0, 0, 0, 0), "mm"),
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank(),
     panel.grid.major.y = element_line(color = "gray90"),  # Lighter color for y-axis grid lines
     panel.grid.minor.y = element_blank()  # Remove minor y-axis grid lines
   ) +
   scale_x_discrete(labels = c("agar:agar:agar" = "Agar", "scaffold:scaffold:scaffold" = "Scaffold"))
+
+ggsave("C:/Users/aurel/Documents/Apples/brood2022/brood_results_day_paper.pdf", p, dpi = 300, bg = "white", width = 65, height = 60, units = "mm")
+
+
 
 dev.off()
 

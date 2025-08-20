@@ -131,6 +131,15 @@ plot_data <- shape_percentages %>%
     )
   )
 
+
+sample_sizes <- plot_data %>%
+  group_by(condition, viscosity) %>%
+  summarise(n = n_distinct(id))
+
+write.table(sample_sizes, "clipboard", sep="\t", row.names=FALSE)
+print(sample_sizes)
+
+
 # Create plot
 png("swimming/droplet/plots/shape_percentage_boxplot_by_viscosity_excluding_z.png", 
     width = 2000, height = 1800)
@@ -139,7 +148,7 @@ agar_color <- "#66C2A5"      # Light green from Set2 palette
 scaffold_color <- "#FC8D62"  # Light orange from Set2 palette
 
 ggplot(plot_data, aes(x = shape_type, y = percentage, fill = growing)) +
-  geom_boxplot(alpha = 0.6, color = "black") +
+  geom_boxplot(color = "black") +
   facet_nested(
     viscosity ~ ancestry + growing,
     scales = "fixed",
@@ -243,14 +252,14 @@ avg_amplitudes_per_video <- avg_amplitudes_per_video %>%
 
 # Create plot with facets for viscosity
 png("swimming/droplet/plots/normalized_avg_max_amplitude_boxplots.png", 
-    width = 2000, height = 1800)
+    width = 1200, height = 800)
 
 agar_color <- "#66C2A5"      # Light green from Set2 palette
 scaffold_color <- "#FC8D62"  # Light orange from Set2 palette
 
 ggplot(avg_amplitudes_per_video, 
        aes(x = viscosity, y = max_amplitudes, fill = growing)) +
-  geom_boxplot(alpha = 0.6, color = "black") +
+  geom_boxplot(color = "black") +
   facet_nested(~ ancestry + growing,
     labeller = labeller(
       ancestry = c(
@@ -285,7 +294,7 @@ ggplot(avg_amplitudes_per_video,
     text = element_text(size = 14),
     axis.text.y = element_text(size = 22),
     axis.text.x = element_text(size = 22, vjust = 0.5),
-    axis.title = element_text(size = 28, face = "plain", margin = margin(t = 22, b = 20)),
+    axis.title = element_text(size = 24, face = "plain", margin = margin(t = 22, b = 20)),
     axis.title.x = element_text(margin = margin(t = 20)),
     axis.title.y = element_text(margin = margin(r = 20)),
     legend.position = "none",
@@ -299,7 +308,7 @@ ggplot(avg_amplitudes_per_video,
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank(),
     panel.grid.major.y = element_line(color = "gray90"),
-    panel.border = element_rect(color = "black", fill = NA),
+    #panel.border = element_rect(color = "black", fill = NA),
     panel.grid.minor.y = element_line(color = "gray95")
   )
 
@@ -333,11 +342,11 @@ avg_freq_by_video <- interpolated_freqs_df %>%
 
 # Create plot
 png("swimming/droplet/plots/avg_interpolated_freqs_boxplot_1hz.png", 
-    width = 2000, height = 1800)
+    width = 1200, height = 800)
 
 ggplot(avg_freq_by_video, 
        aes(x = viscosity, y = avg_interpolated_freq, fill = growing)) +
-  geom_boxplot(alpha = 0.6, color = "black") +
+  geom_boxplot(color = "black") +
   facet_nested(~ ancestry + growing,
     labeller = labeller(
       ancestry = c(
@@ -372,7 +381,7 @@ ggplot(avg_freq_by_video,
     text = element_text(size = 14),
     axis.text.y = element_text(size = 22),
     axis.text.x = element_text(size = 22, vjust = 0.5),
-    axis.title = element_text(size = 28, face = "plain", margin = margin(t = 22, b = 20)),
+    axis.title = element_text(size = 24, face = "plain", margin = margin(t = 22, b = 20)),
     axis.title.x = element_text(margin = margin(t = 20)),
     axis.title.y = element_text(margin = margin(r = 20)),
     legend.position = "none",
@@ -386,7 +395,7 @@ ggplot(avg_freq_by_video,
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank(),
     panel.grid.major.y = element_line(color = "gray90"),
-    panel.border = element_rect(color = "black", fill = NA),
+    #panel.border = element_rect(color = "black", fill = NA),
     panel.grid.minor.y = element_line(color = "gray95")
   )
 
@@ -427,13 +436,13 @@ print(unique(avg_normalized_df$growing))
 
 # Create plot
 png("swimming/droplet/plots/normalized_wavelengths_boxplot_by_viscosity.png", 
-    width = 2000, height = 1800)
+    width = 1200, height = 800)
 
 agar_color <- "#66C2A5"      # Light green from Set2 palette
 scaffold_color <- "#FC8D62"  # Light orange from Set2 palette
 
 ggplot(avg_normalized_df, aes(x = viscosity, y = normalized_wavelengths, fill = growing)) +
-  geom_boxplot(alpha = 0.6, color = "black") +
+  geom_boxplot(color = "black") +
   facet_nested(~ ancestry + growing,
     labeller = labeller(
       ancestry = c("agar" = "Agar ancestry", "scaffold" = "Scaffold ancestry"),
@@ -461,7 +470,7 @@ ggplot(avg_normalized_df, aes(x = viscosity, y = normalized_wavelengths, fill = 
     text = element_text(size = 14),
     axis.text.y = element_text(size = 22),
     axis.text.x = element_text(size = 22, vjust = 0.5),
-    axis.title = element_text(size = 28, face = "plain", margin = margin(t = 22, b = 20)),
+    axis.title = element_text(size = 24, face = "plain", margin = margin(t = 22, b = 20)),
     axis.title.x = element_text(margin = margin(t = 20)),
     axis.title.y = element_text(margin = margin(r = 20)),
     legend.position = "none",
@@ -475,7 +484,7 @@ ggplot(avg_normalized_df, aes(x = viscosity, y = normalized_wavelengths, fill = 
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank(),
     panel.grid.major.y = element_line(color = "gray90"),
-    panel.border = element_rect(color = "black", fill = NA),
+    #panel.border = element_rect(color = "black", fill = NA),
     panel.grid.minor.y = element_line(color = "gray95")
   )
 

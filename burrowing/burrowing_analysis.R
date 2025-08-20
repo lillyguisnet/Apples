@@ -164,6 +164,8 @@ df_longse <- df %>%
   )
 
 
+
+
 #Percentage at top
 png("av_timetotop_paper.png", width = 980, height = 900)
 
@@ -209,7 +211,7 @@ ggplot(df_longse, aes(time, perc_top_cond, colour = condition)) +
                                 "c" = "Scaffold ancestry, Scaffold growth",
                                 "d" = "Scaffold ancestry, Agar growth")) +
   scale_x_continuous(breaks = c(0, 60, 120, 180), labels = c("0", "60", "120", "180")) +
-  scale_y_continuous(labels = scales::number_format(accuracy = 1))
+  scale_y_continuous(labels = function(x) ifelse(x == 0, "0", sprintf("%.1f", x)))
 
 dev.off()
 

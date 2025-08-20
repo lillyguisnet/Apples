@@ -124,6 +124,13 @@ df_with_se <- df_with_se %>%
   ) %>%
   ungroup()
 
+sample_sizes <- df %>%
+  group_by(condition, time_hours) %>%
+  summarise(n = n())
+
+write.table(sample_sizes, "clipboard", sep="\t", row.names=FALSE)
+print(sample_sizes)
+
 # Set up aesthetic mappings
 line_types <- c("solid", "dashed", "dotted", "dotdash")
 point_shapes <- c(16, 17, 15, 18)
@@ -285,7 +292,7 @@ ggplot(df_with_se, aes(x = x_pos, y = mean_perc_dead, color = condition, group =
     width = 0.1,
     size = 0.75
   ) +
-  geom_line(aes(linetype = condition), size = 0.75) +
+  geom_line(aes(linetype = condition), linewidth = 0.75) +
   geom_point(aes(shape = condition), size = 5) +
   scale_x_continuous(
    # breaks = unique(df_with_se$x_pos),

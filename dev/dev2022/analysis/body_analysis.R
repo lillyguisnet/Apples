@@ -23,7 +23,6 @@ df_dist <- df_wcond %>%
 
 
 
-
 #########Non-normalized to AD1 plots###########
 
 
@@ -97,7 +96,7 @@ ggplot(df_perimeter, aes(day, perimeter_byid, colour = as.factor(condition))) +
 
 
 
-###########	##Normalizes by ad1################
+###########	##Normalized by ad1################
 
 norm_ad1length <- function(x) {
   norm_length <- (2*(x-min(df_dist$centered_length[which(df_dist$condition=="a"&df_dist$day=="1")]))/(-min(df_dist$centered_length[which(df_dist$condition=="a"&df_dist$day=="1")]) - min(df_dist$centered_length[which(df_dist$condition=="a"&df_dist$day=="1")]))) - 1
@@ -247,13 +246,15 @@ write.table(sample_sizes, "clipboard", sep="\t", row.names=FALSE)
 print("Sample sizes by condition and day:")
 print(sample_sizes)
 
-png("norm_body_length_day_paper.png", width = 1100, height = 900)
+
+
+png("norm_body_length_day_paper.pdf", dpi = 300, bg = "white", width = 70, height = 60, units = "mm")
 
 agar_color <- "#66C2A5"      # Light green from Set2 palette
 scaffold_color <- "#FC8D62"  # Light orange from Set2 palette
 
-ggplot(df_norm, aes(x = as.factor(day), y = norm_pruned_medialaxis_length, fill = condition)) +
-  geom_boxplot() +
+p <-ggplot(df_norm, aes(x = as.factor(day), y = norm_pruned_medialaxis_length, fill = condition)) +
+  geom_boxplot(lwd = 0.1, outlier.size = 0.01) +
   #geom_jitter() +
   facet_nested(
     ~ ancestry + growing,
@@ -265,12 +266,12 @@ ggplot(df_norm, aes(x = as.factor(day), y = norm_pruned_medialaxis_length, fill 
     ),
     strip = strip_nested(
       background_x = list(
-        element_rect(fill = agar_color, color = "white", linewidth = 1.5),
-        element_rect(fill = scaffold_color, color = "white", linewidth = 1.5)
+        element_rect(fill = agar_color, color = "white", linewidth = 0.8),
+        element_rect(fill = scaffold_color, color = "white", linewidth = 0.8)
       ),
       text_x = list(
-        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 8)),
-        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 5))
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 2, b = 2)),
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 2, b = 2))
       )
     )
   ) +
@@ -281,25 +282,25 @@ ggplot(df_norm, aes(x = as.factor(day), y = norm_pruned_medialaxis_length, fill 
   scale_fill_manual(values = c("a" = agar_color, "b" = scaffold_color, "c" = scaffold_color, "d" = agar_color)) +
   theme_minimal() +
   theme(
-    text = element_text(size = 14),
-    axis.text.y = element_text(size = 18),
-    axis.text.x = element_text(size = 20),
-    axis.title = element_text(size = 22, face = "plain", margin = margin(t = 22, b = 20)),
-    axis.title.x = element_text(margin = margin(t = 20)),
-    axis.title.y = element_text(margin = margin(r = 20)),
+    text = element_text(size = 8),
+    axis.text.y = element_text(size = 8, color = "black"),
+    axis.text.x = element_text(size = 8, color = "black"),
+    #axis.title = element_text(size = 8, face = "plain", margin = margin(t = 22, b = 20)),
+    axis.title.x = element_text(margin = margin(t = 2)),
+    axis.title.y = element_text(margin = margin(r = 2)),
     legend.position = "none",
     panel.background = element_rect(fill = "white", color = NA),
     plot.background = element_rect(fill = "white", color = NA),
-    panel.spacing = unit(0.5, "lines"),
+    panel.spacing.x = unit(0.01, "lines"),
     strip.background = element_blank(),
-    strip.text = element_text(size = 18, face = "bold"),
-    strip.text.x = element_text(margin = margin(t = 5, b = 5)),
-    aspect.ratio = 3,
-    plot.margin = unit(c(0.25, 0.25, 0.25, 0.25), "cm"),
+    #strip.text = element_text(size = 18, face = "bold"),
+    strip.text.x = element_text(margin = margin(t = 0, b = 0)),
+    #aspect.ratio = 3,
+    plot.margin = unit(c(0, 0, 0, 0), "mm"),
     panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.major.y = element_line(color = "gray90"),
-    panel.grid.minor.y = element_line(color = "gray95")
+    panel.grid.minor.x = element_blank()
+    #panel.grid.major.y = element_line(color = "gray90"),
+    #panel.grid.minor.y = element_line(color = "gray95")
   ) +
   scale_y_continuous(
     limits = c(NA, 4.5),  # Adjust as needed
@@ -307,6 +308,11 @@ ggplot(df_norm, aes(x = as.factor(day), y = norm_pruned_medialaxis_length, fill 
     minor_breaks = seq(-1, 5, by = 0.5),  # Minor grid lines every 0.5
     labels = scales::number_format(accuracy = 1)
   )
+
+ggsave("C:/Users/aurel/Documents/Apples/dev/dev2022/analysis/norm_body_length_day_paper.pdf", p, dpi = 300, bg = "white", width = 90, height = 60, units = "mm")
+#ggsave("C:/Users/aurel/Documents/Apples/dev/dev2022/analysis/norm_body_length_day_paper.eps", p, dpi = 300, bg = "white", width = 85, height = 70, units = "mm")
+
+
 
 dev.off()
 
@@ -606,47 +612,47 @@ agar_color <- "#66C2A5"      # Light green from Set2 palette
 scaffold_color <- "#FC8D62"  # Light orange from Set2 palette
 
 # Create the plot
-ggplot(df_blbw_norm, aes(x = growing, y = norm_blbw, fill = as.factor(growing))) +
-  geom_boxplot() +
+p <- ggplot(df_blbw_norm, aes(x = growing, y = norm_blbw, fill = as.factor(growing))) +
+  geom_boxplot(lwd = 0.1, outlier.size = 0.01) +
   facet_wrap2(
     ~ ancestry,
     scales = "free_x",
     ncol = 2,
-    labeller = labeller(ancestry = c("agar" = "Agar ancestry", "scaffold" = "Scaffold ancestry")),
+    labeller = labeller(ancestry = c("agar" = "Agar\nancestry", "scaffold" = "Scaffold\nancestry")),
     strip = strip_themed(
       background_x = list(
         element_rect(fill = agar_color, color = NA),
         element_rect(fill = scaffold_color, color = NA)
       ),
       text_x = list(
-        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 10)),
-        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 5))
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 1, b = 2, l = 1, r = 1)),
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 1, b = 0, l = 1, r = 1))
       )
     )
   ) +
   labs(
     y = "Normalized body length/body width ratio",
-    x = "Growing condition",
+    x = "Growing habitat",
   ) +
   scale_fill_manual(values = c("agar" = agar_color, "scaffold" = scaffold_color)) +
   scale_x_discrete(labels = c("agar" = "Agar", "scaffold" = "Scaffold")) +
   theme_minimal() +
   theme(
-    text = element_text(size = 14),
-    axis.text.y = element_text(size = 18),  # Increased from 12 to 16
-    axis.text.x = element_text(size = 20),  # Increased from 12 to 16
-    axis.title = element_text(size = 22, face = "plain", margin = margin(t = 22, b = 20)),  # Added margin
-    axis.title.x = element_text(margin = margin(t = 20)),  # Added extra margin for x-axis title
-    axis.title.y = element_text(margin = margin(r = 20)),  # Added extra margin for y-axis title
+    text = element_text(size = 8),
+    axis.text.y = element_text(size = 8, color = "black"),  # Increased from 12 to 16
+    axis.text.x = element_text(size = 8, color = "black", angle = 45, hjust = 1, margin = margin(t = -4, b = 0)),  # Increased from 12 to 16
+    #axis.title = element_text(size = 8, face = "plain", margin = margin(t = 22, b = 20)),  # Added margin
+    axis.title.x = element_text(margin = margin(t = 2)),  # Added extra margin for x-axis title
+    axis.title.y = element_text(margin = margin(r = 2)),  # Added extra margin for y-axis title
     legend.position = "none",
     panel.background = element_rect(fill = "white", color = NA),
     plot.background = element_rect(fill = "white", color = NA),
-    panel.spacing = unit(0.5, "lines"),
+    #panel.spacing = unit(0.01, "lines"),
     strip.background = element_blank(),
-    strip.text = element_text(size = 18, face = "bold"),
-    strip.text.x = element_text(margin = margin(t = 5, b = 5)),  # Reduced top and bottom margins
-    aspect.ratio = 3,
-    plot.margin = unit(c(0.25, 0.25, 0.25, 0.25), "cm"),  # Remove margins around the plot
+    #strip.text = element_text(size = 18, face = "bold"),
+    strip.text.x = element_text(margin = margin(t = 0, b = 0)),  # Reduced top and bottom margins
+    #aspect.ratio = 3,
+    plot.margin = unit(c(0, 0, 0, 0), "mm"),  # Remove margins around the plot
     panel.grid.major.x = element_blank(),  # Remove x axis grid lines
     panel.grid.minor.x = element_blank()   # Remove minor x axis grid lines if present
   ) +
@@ -656,6 +662,9 @@ ggplot(df_blbw_norm, aes(x = growing, y = norm_blbw, fill = as.factor(growing)))
     minor_breaks = seq(-1, 1, by = 0.1),  # Minor grid lines every 0.1
     labels = scales::number_format(accuracy = 0.1)
   )
+
+ggsave("C:/Users/aurel/Documents/Apples/dev/dev2022/analysis/norm_body_length_width_ratio_overall_paper.pdf", p, dpi = 300, bg = "white", width = 35, height = 60, units = "mm")
+
 
 
 dev.off()
@@ -668,8 +677,8 @@ png("norm_body_length_width_ratio_paper.png", width = 1100, height = 900)
 agar_color <- "#66C2A5"      # Light green from Set2 palette
 scaffold_color <- "#FC8D62"  # Light orange from Set2 palette
 
-ggplot(df_blbw_norm, aes(x = as.factor(day), y = norm_blbw, fill = condition)) +
-  geom_boxplot() +
+p <- ggplot(df_blbw_norm, aes(x = as.factor(day), y = norm_blbw, fill = condition)) +
+  geom_boxplot(lwd = 0.1, outlier.size = 0.01) +
   facet_nested(
     ~ ancestry + growing,
     scales = "free_x",
@@ -679,12 +688,12 @@ ggplot(df_blbw_norm, aes(x = as.factor(day), y = norm_blbw, fill = condition)) +
     ),
     strip = strip_nested(
       background_x = list(
-        element_rect(fill = agar_color, color = "white", linewidth = 1.5),
-        element_rect(fill = scaffold_color, color = "white", linewidth = 1.5)
+        element_rect(fill = agar_color, color = "white", linewidth = 0.8),
+        element_rect(fill = scaffold_color, color = "white", linewidth = 0.8)
       ),
       text_x = list(
-        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 8)),
-        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 5))
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 2, b = 2)),
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 2, b = 2))
       )
     )
   ) +
@@ -695,21 +704,21 @@ ggplot(df_blbw_norm, aes(x = as.factor(day), y = norm_blbw, fill = condition)) +
   scale_fill_manual(values = c("a" = agar_color, "b" = scaffold_color, "c" = scaffold_color, "d" = agar_color)) +
   theme_minimal() +
   theme(
-    text = element_text(size = 14),
-    axis.text.y = element_text(size = 18),
-    axis.text.x = element_text(size = 20),
-    axis.title = element_text(size = 22, face = "plain", margin = margin(t = 22, b = 20)),
-    axis.title.x = element_text(margin = margin(t = 20)),
-    axis.title.y = element_text(margin = margin(r = 20)),
+    text = element_text(size = 8),
+    axis.text.y = element_text(size = 8, color = "black"),
+    axis.text.x = element_text(size = 8, color = "black"),
+    #axis.title = element_text(size = 8, face = "plain", margin = margin(t = 22, b = 20)),
+    axis.title.x = element_text(margin = margin(t = 2)),
+    axis.title.y = element_text(margin = margin(r = 2)),
     legend.position = "none",
     panel.background = element_rect(fill = "white", color = NA),
     plot.background = element_rect(fill = "white", color = NA),
-    panel.spacing = unit(0.5, "lines"),
+    panel.spacing = unit(0.01, "lines"),
     strip.background = element_blank(),
-    strip.text = element_text(size = 18, face = "bold"),
-    strip.text.x = element_text(margin = margin(t = 5, b = 5)),
-    aspect.ratio = 3,
-    plot.margin = unit(c(0.25, 0.25, 0.25, 0.25), "cm"),
+    #strip.text = element_text(size = 18, face = "bold"),
+    strip.text.x = element_text(margin = margin(t = 0, b = 0)),
+    #aspect.ratio = 3,
+    plot.margin = unit(c(0, 0, 0, 0), "mm"),
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank(),
     panel.grid.major.y = element_line(color = "gray90"),
@@ -721,6 +730,11 @@ ggplot(df_blbw_norm, aes(x = as.factor(day), y = norm_blbw, fill = condition)) +
     minor_breaks = seq(-1, 1, by = 0.1),  # Minor grid lines every 0.1
     labels = scales::number_format(accuracy = 0.1)
   )
+
+ggsave("C:/Users/aurel/Documents/Apples/dev/dev2022/analysis/norm_body_length_width_ratio_day_paper.pdf", p, dpi = 300, bg = "white", width = 95, height = 62, units = "mm")
+
+
+
 
 dev.off()
 

@@ -243,6 +243,13 @@ df_swim <- df_swim %>%
     )
   )
 
+sample_sizes <- df_swim %>%
+  group_by(ancestry, growing, mc_concentration) %>%
+  summarise(n = n_distinct(dayreplicate))
+
+write.table(sample_sizes, "clipboard", sep="\t", row.names=FALSE)
+print(sample_sizes)
+
 
 png("swimming/wellplate/swimming_wellplate_bends_histogram_by_condition_paper.png", width = 1200, height = 800)
 
@@ -250,7 +257,7 @@ agar_color <- "#66C2A5"      # Light green from Set2 palette
 scaffold_color <- "#FC8D62"  # Light orange from Set2 palette
 
 ggplot(df_swim %>% filter(mc_concentration == 0), aes(x = bends, fill = as.factor(growing))) +
-  geom_histogram(binwidth = 1, position = "dodge", alpha = 0.6, color = "black") +
+  geom_histogram(binwidth = 1, position = "dodge", color = "black") +
   facet_nested(
     ~ ancestry + growing,
     scales = "fixed",
@@ -410,7 +417,7 @@ ggplot(df_proportions_filtered, aes(x = growing, y = pslow, fill = as.factor(gro
     labeller = labeller(ancestry = c("agar" = "Agar ancestry", "scaffold" = "Scaffold ancestry"))
   ) +
   labs(
-    y = "Percent of time in quiescence",
+    y = "Percent of time in slow swimming",
     x = "Growing condition",
   ) +
   scale_fill_manual(values = c("agar" = agar_color, "scaffold" = scaffold_color)) +
@@ -493,8 +500,20 @@ df_noquiters <- df_swim %>%
   mutate(dayreplicatecondition = paste(condition, day, replicate, sep = "_")) %>%
   mutate(quiter = any(bends <= 4)) %>%
   filter(!quiter) %>%
-  summarise(av_bends = mean(bends)) %>%
+  summarise(
+    av_bends = mean(bends),
+    ancestry = first(ancestry),
+    growing = first(growing)
+  ) %>%
   ungroup()
+
+sample_sizes <- df_swim %>%
+  group_by(condition, mc_concentration) %>%
+  summarise(n = n())
+
+write.table(sample_sizes, "clipboard", sep="\t", row.names=FALSE)
+print(sample_sizes)
+
 
 
 png("swimming/wellplate/swimming_wellplate_bends_by_condition_viscosity_paper.png", width = 1200, height = 800)
@@ -503,7 +522,7 @@ agar_color <- "#66C2A5"      # Light green from Set2 palette
 scaffold_color <- "#FC8D62"  # Light orange from Set2 palette
 
 ggplot(df_noquiters, aes(x = as.factor(mc_concentration), y = av_bends, fill = as.factor(growing))) +
-  geom_boxplot(alpha = 0.6, color = "black") +
+  geom_boxplot(color = "black") +
   facet_nested(
     ~ ancestry + growing,
     scales = "fixed",

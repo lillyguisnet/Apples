@@ -95,7 +95,7 @@ table_data <- data.frame(
 )
 
 # Add ancestry_habitat and growing_habitat columns to df based on condition
-df$ancestry_habitat <- ifelse(df$condition %in% c("a", "b"), "Agar ancestry", "Scaffold ancestry")
+df$ancestry_habitat <- ifelse(df$condition %in% c("a", "b"), "Agar\nancestry", "Scaffold\nancestry")
 df$growing_habitat <- ifelse(df$condition %in% c("a", "d"), "agar", "scaffold")
 
 
@@ -140,7 +140,8 @@ scaffold_color <- "#FC8D62"  # Light orange from Set2 palette
 
 # Create the plot
 p <- ggplot(df, aes(x = growing_habitat, y = nb_pumps, fill = as.factor(growing_habitat))) +
-  geom_boxplot() +
+  geom_boxplot(lwd = 0.1, outlier.size = 0.01) +
+  #geom_jitter(shape = 16, position = position_jitter(0.01), show.legend = FALSE, cex = 0.2) +
   facet_wrap2(
     ~ ancestry_habitat,
     scales = "free_x",
@@ -151,39 +152,42 @@ p <- ggplot(df, aes(x = growing_habitat, y = nb_pumps, fill = as.factor(growing_
         element_rect(fill = scaffold_color, color = NA)
       ),
       text_x = list(
-        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 8)),
-        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 5))
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 0, b = 1)),
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 0, b = 0))
       )
     )
   ) +
   labs(
     y = "Number of pumps/10 sec",
-    x = "Growing condition",
+    x = "Growing habitat",
   ) +
   scale_fill_manual(values = c("agar" = agar_color, "scaffold" = scaffold_color)) +
   scale_x_discrete(labels = c("agar" = "Agar", "scaffold" = "Scaffold")) +  # Rename x axis labels
   theme_minimal() +
   theme(
-    text = element_text(size = 14),
-    axis.text.y = element_text(size = 18),  # Increased from 12 to 16
-    axis.text.x = element_text(size = 20),  # Increased from 12 to 16
-    axis.title = element_text(size = 22, face = "plain", margin = margin(t = 22, b = 20)),  # Added margin
-    axis.title.x = element_text(margin = margin(t = 20)),  # Added extra margin for x-axis title
-    axis.title.y = element_text(margin = margin(r = 20)),  # Added extra margin for y-axis title
+    text = element_text(size = 8),
+    axis.text.y = element_text(size = 8, color = "black"),  # Increased from 12 to 16
+    axis.text.x = element_text(size = 8, angle = 45, color = "black", margin = margin(t = -5, b = 0), hjust = 1),  # Increased from 12 to 16
+    #axis.title = element_text(size = 6, face = "plain", margin = margin(t = 2, b = 2)),  # Added margin
+    axis.title.x = element_text(margin = margin(t = 2)),  # Added extra margin for x-axis title
+    axis.title.y = element_text(margin = margin(r = 2)),  # Added extra margin for y-axis title
     legend.position = "none",
     panel.background = element_rect(fill = "white", color = NA),
     plot.background = element_rect(fill = "white", color = NA),
-    panel.spacing = unit(0.5, "lines"),
+    #panel.spacing = unit(0.5, "lines"),
     strip.background = element_blank(),
-    strip.text = element_text(size = 18, face = "bold"),
-    strip.text.x = element_text(margin = margin(t = 5, b = 5)),  # Reduced top and bottom margins
-    aspect.ratio = 3,
-    plot.margin = unit(c(0.25, 0.25, 0.25, 0.25), "cm"),  # Remove margins around the plot
+    #strip.text = element_text(size = 8, face = "bold"),
+    strip.text.x = element_text(margin = margin(t = 0, b = 0)),  # Reduced top and bottom margins
+    #aspect.ratio = 7,
+    plot.margin = unit(c(0, 0, 0, 0), "mm"),  # Remove margins around the plot
     panel.grid.major.x = element_blank(),  # Remove x axis grid lines
     panel.grid.minor.x = element_blank()   # Remove minor x axis grid lines if present
   )
 
-print(p)
+#print(p)
 
 # Save the plot with no white space
-ggsave("C:/Users/aurel/Documents/Apples/pumping/pumping_analysis_paper.png", p, dpi = 300, bg = "white", width = 8, height = 12, units = "in", limitsize = FALSE)
+ggsave("C:/Users/aurel/Documents/Apples/pumping/pumping_analysis_paper.pdf", p, dpi = 300, bg = "white", width = 35, height = 60, units = "mm")
+
+
+

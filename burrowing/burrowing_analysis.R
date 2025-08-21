@@ -169,27 +169,26 @@ df_longse <- df %>%
 #Percentage at top
 png("av_timetotop_paper.png", width = 980, height = 900)
 
-ggplot(df_longse, aes(time, perc_top_cond, colour = condition)) +
-  geom_line(aes(linetype = condition), linewidth = 1.2) +
-  geom_point(aes(shape = condition, fill = condition), size = 4, stroke = 1.5) +
-  geom_errorbar(aes(ymin = perc_top_cond - se, ymax = perc_top_cond + se), width = 5, size = 0.7) +
+p <- ggplot(df_longse, aes(time, perc_top_cond, colour = condition)) +
+  geom_line(aes(linetype = condition), linewidth = 0.1) +
+  geom_point(aes(shape = condition, fill = condition), size = 1, stroke = 0.1) +
+  geom_errorbar(aes(ymin = perc_top_cond - se, ymax = perc_top_cond + se), width = 1, size = 0.1) +
   theme_minimal() +
-  theme(aspect.ratio = 0.8,
-        legend.position = c(0.2, 0.9),  # Moved the legend to the top left
-        legend.background = element_blank(),  # Removed the legend outline
-        legend.margin = margin(6, 6, 6, 6),
-        legend.key.size = unit(1, "cm"),  # Increased legend key size
-        legend.text = element_text(size = 16),  # Increased legend text size
-        legend.title = element_text(size = 18, face = "plain"),  # Increased legend title size and made it bold
-        axis.title = element_text(size = 22, face = "plain", margin = margin(t = 22, b = 20)),
-        axis.text = element_text(size = 20, margin = margin(t = 15, r = 15, b = 15, l = 15)),
-        axis.title.x = element_text(margin = margin(t = 20)),
-        axis.title.y = element_text(margin = margin(r = 20))) +
-  labs(x = "Time (minutes)", y = "Percentage at top", 
-       color = "Ancestry and Growth Condition", 
-       linetype = "Ancestry and Growth Condition", 
-       shape = "Ancestry and Growth Condition", 
-       fill = "Ancestry and Growth Condition") +
+  theme(legend.position = c(0, 1),  # Moved the legend to the top left
+        text = element_text(size = 8, color = "black"),
+        axis.text.y = element_text(size = 8, color = "black"),
+        axis.text.x = element_text(size = 8, color = "black"),        
+        legend.background = element_rect(fill = scales::alpha("white", 0.7), color = NA),  # Removed the legend outline
+        legend.margin = margin(0.1, 0.1, 0.1, 0.1),
+        #legend.key.size = unit(0.5, "lines"),  # Increased legend key size
+        legend.text = element_text(size = 8),  # Increased legend text size
+        legend.title = element_text(size = 8, face = "plain"),  # Increased legend title size and made it bold
+        axis.title = element_text(size = 8, face = "plain", margin = margin(t = 2, b = 2)),
+        #axis.text = element_text(size = 8, margin = margin(t = 1, r = 1, b = 1, l = 1)),
+        plot.margin = unit(c(0, 0, 0, 0), "mm"),
+        axis.title.x = element_text(margin = margin(t = 2)),
+        axis.title.y = element_text(margin = margin(r = 2))) +
+  labs(x = "Time (minutes)", y = "Percentage at top") +
   scale_color_brewer(palette = "Set2",
                      labels = c("a" = "Agar ancestry, Agar growth",
                                 "b" = "Agar ancestry, Scaffold growth",
@@ -212,6 +211,10 @@ ggplot(df_longse, aes(time, perc_top_cond, colour = condition)) +
                                 "d" = "Scaffold ancestry, Agar growth")) +
   scale_x_continuous(breaks = c(0, 60, 120, 180), labels = c("0", "60", "120", "180")) +
   scale_y_continuous(labels = function(x) ifelse(x == 0, "0", sprintf("%.1f", x)))
+
+ggsave("C:/Users/aurel/Documents/Apples/burrowing/av_timetotop_paper.png", p, dpi = 300, bg = "white", width = 65, height = 60, units = "mm")
+
+
 
 dev.off()
 

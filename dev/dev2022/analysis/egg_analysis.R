@@ -41,7 +41,7 @@ ggplot(df_norm, aes(condition, norm_elongation, colour = as.factor(condition))) 
 
 
 
-#####Plots for the paper
+#####Plots for paper
 df_norm <- df_norm %>%
   mutate(
     ancestry = case_when(
@@ -70,8 +70,8 @@ png("norm_egg_area_condition_paper.png", width = 750, height = 1100)
 agar_color <- "#66C2A5"      # Light green from Set2 palette
 scaffold_color <- "#FC8D62"  # Light orange from Set2 palette
 
-ggplot(df_norm, aes(x = growing, y = norm_area, fill = as.factor(growing))) +
-  geom_boxplot() +
+p <- ggplot(df_norm, aes(x = growing, y = norm_area, fill = as.factor(growing))) +
+  geom_boxplot(lwd = 0.1, outlier.size = 0.01) +
   facet_wrap2(
     ~ ancestry,
     scales = "free_x",
@@ -82,40 +82,45 @@ ggplot(df_norm, aes(x = growing, y = norm_area, fill = as.factor(growing))) +
         element_rect(fill = scaffold_color, color = NA)
       ),
       text_x = list(
-        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 8)),
-        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 5))
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 0, b = 1)),
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 0, b = 0))
       )
     ),
-    labeller = labeller(ancestry = c("agar" = "Agar ancestry", "scaffold" = "Scaffold ancestry"))
+    labeller = labeller(ancestry = c("agar" = "Agar\nancestry", "scaffold" = "Scaffold\nancestry"))
   ) +
   labs(
     y = "Normalized egg area",
-    x = "Growing condition",
+    x = "Growing habitat",
   ) +
   scale_fill_manual(values = c("agar" = agar_color, "scaffold" = scaffold_color)) +
   scale_x_discrete(labels = c("agar" = "Agar", "scaffold" = "Scaffold")) +
   theme_minimal() +
   theme(
-    text = element_text(size = 14),
-    axis.text.y = element_text(size = 18),
-    axis.text.x = element_text(size = 20),
-    axis.title = element_text(size = 22, face = "plain", margin = margin(t = 22, b = 20)),
-    axis.title.x = element_text(margin = margin(t = 20)),
-    axis.title.y = element_text(margin = margin(r = 20)),
+    text = element_text(size = 8, color = "black"),
+    axis.text.y = element_text(size = 8, color = "black"),
+    #axis.text.x = element_text(size = 8),
+    axis.text.x = element_text(size = 8, face = "plain", angle = 45, margin = margin(t = -5, b = 0), hjust = 1, color = "black"),
+    axis.title.x = element_text(margin = margin(t = 2)),
+    axis.title.y = element_text(margin = margin(r = 2)),
     legend.position = "none",
     panel.background = element_rect(fill = "white", color = NA),
     plot.background = element_rect(fill = "white", color = NA),
-    panel.spacing = unit(0.5, "lines"),
+    #panel.spacing = unit(0.5, "lines"),
     strip.background = element_blank(),
-    strip.text = element_text(size = 18, face = "plain"),
-    strip.text.x = element_text(margin = margin(t = 5, b = 5)),
-    aspect.ratio = 3,
-    plot.margin = unit(c(0.25, 0.25, 0.25, 0.25), "cm"),
+    #strip.text = element_text(size = 18, face = "plain"),
+    strip.text.x = element_text(margin = margin(t = 0, b = 0)),
+    #aspect.ratio = 3,
+    plot.margin = unit(c(0, 0, 0, 0), "mm"),
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank(),
-    panel.grid.major.y = element_line(color = "gray90"),
-    panel.grid.minor.y = element_line(color = "gray95")
+    panel.grid.minor.y = element_blank()
   )
+
+ggsave("C:/Users/aurel/Documents/Apples/dev/dev2022/analysis/norm_egg_area_condition_paper.png", p, dpi = 300, bg = "white", width = 35, height = 60, units = "mm")
+
+
+
+
 
 dev.off()
 
@@ -130,8 +135,8 @@ png("norm_egg_elongation_condition_paper.png", width = 750, height = 1100)
 agar_color <- "#66C2A5"      # Light green from Set2 palette
 scaffold_color <- "#FC8D62"  # Light orange from Set2 palette
 
-ggplot(df_norm, aes(x = growing, y = norm_elongation, fill = as.factor(growing))) +
-  geom_boxplot() +
+p <- ggplot(df_norm, aes(x = growing, y = norm_elongation, fill = as.factor(growing))) +
+  geom_boxplot(lwd = 0.1, outlier.size = 0.01) +
   facet_wrap2(
     ~ ancestry,
     scales = "free_x",
@@ -142,40 +147,45 @@ ggplot(df_norm, aes(x = growing, y = norm_elongation, fill = as.factor(growing))
         element_rect(fill = scaffold_color, color = NA)
       ),
       text_x = list(
-        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 8)),
-        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 5))
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 0, b = 1)),
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 0, b = 0))
       )
     ),
-    labeller = labeller(ancestry = c("agar" = "Agar ancestry", "scaffold" = "Scaffold ancestry"))
+    labeller = labeller(ancestry = c("agar" = "Agar\nancestry", "scaffold" = "Scaffold\nancestry"))
   ) +
   labs(
     y = "Normalized egg elongation",
-    x = "Growing condition",
+    x = "Growing habitat",
   ) +
   scale_fill_manual(values = c("agar" = agar_color, "scaffold" = scaffold_color)) +
   scale_x_discrete(labels = c("agar" = "Agar", "scaffold" = "Scaffold")) +
   scale_y_continuous(breaks = c(-0.2, -0.1, 0, 0.1, 0.2), labels = c("-0.2", "-0.1", "0", "0.1", "0.2")) +
   theme_minimal() +
   theme(
-    text = element_text(size = 14),
-    axis.text.y = element_text(size = 18),
-    axis.text.x = element_text(size = 20),
-    axis.title = element_text(size = 22, face = "plain", margin = margin(t = 22, b = 20)),
-    axis.title.x = element_text(margin = margin(t = 20)),
-    axis.title.y = element_text(margin = margin(r = 20)),
+    text = element_text(size = 8, color = "black"),
+    axis.text.y = element_text(size = 8, color = "black"),
+    axis.text.x = element_text(size = 8, face = "plain", angle = 45, margin = margin(t = -5, b = 0), hjust = 1, color = "black"),
+    #axis.title = element_text(size = 8, face = "plain", angle = 45, margin = margin(t = -5, b = 0), hjust = 1),
+    axis.title.x = element_text(margin = margin(t = 2)),
+    axis.title.y = element_text(margin = margin(r = 2)),
     legend.position = "none",
     panel.background = element_rect(fill = "white", color = NA),
     plot.background = element_rect(fill = "white", color = NA),
-    panel.spacing = unit(0.5, "lines"),
+    #panel.spacing = unit(0.5, "lines"),
     strip.background = element_blank(),
-    strip.text = element_text(size = 18, face = "plain"),
-    strip.text.x = element_text(margin = margin(t = 5, b = 5)),
-    aspect.ratio = 3,
-    plot.margin = unit(c(0.25, 0.25, 0.25, 0.25), "cm"),
+    #strip.text = element_text(size = 18, face = "plain"),
+    strip.text.x = element_text(margin = margin(t = 0, b = 0)),
+    #aspect.ratio = 3,
+    plot.margin = unit(c(0, 0, 0, 0), "mm"),
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank(),
-    panel.grid.major.y = element_line(color = "gray90"),
-    panel.grid.minor.y = element_line(color = "gray95")
+    #panel.grid.major.y = element_line(color = "gray90"),
+    panel.grid.minor.y = element_blank()
   )
+
+ggsave("C:/Users/aurel/Documents/Apples/dev/dev2022/analysis/norm_egg_elongation_condition_paper.png", p, dpi = 300, bg = "white", width = 35, height = 60, units = "mm")
+
+
+
 
 dev.off()

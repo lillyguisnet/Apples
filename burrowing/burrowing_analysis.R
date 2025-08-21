@@ -7,6 +7,7 @@ library(ggh4x)
 
 xl_file = "burrowing_data.xlsx"
 df <- as.data.frame(read.xlsx(xl_file))
+df$condition <- factor(df$condition, levels = c("a", "b", "d", "c"))
 
 
 df_clean <- group_by(df) %>%
@@ -166,21 +167,24 @@ df_longse <- df %>%
 
 
 
+
 #Percentage at top
 png("av_timetotop_paper.png", width = 980, height = 900)
 
 p <- ggplot(df_longse, aes(time, perc_top_cond, colour = condition)) +
-  geom_line(aes(linetype = condition), linewidth = 0.1) +
-  geom_point(aes(shape = condition, fill = condition), size = 1, stroke = 0.1) +
-  geom_errorbar(aes(ymin = perc_top_cond - se, ymax = perc_top_cond + se), width = 1, size = 0.1) +
+  geom_line(aes(linetype = condition), linewidth = 0.3) +
+  geom_point(aes(shape = condition, fill = condition), size = 2, stroke = 0.1) +
+  geom_errorbar(aes(ymin = perc_top_cond - se, ymax = perc_top_cond + se), width = 2, size = 0.3) +
   theme_minimal() +
-  theme(legend.position = c(0, 1),  # Moved the legend to the top left
+  theme(#legend.position = c(0, 1),  # Moved the legend to the top left
+        legend.position = "none",
+        legend.justification = c(0, 1),
         text = element_text(size = 8, color = "black"),
         axis.text.y = element_text(size = 8, color = "black"),
         axis.text.x = element_text(size = 8, color = "black"),        
-        legend.background = element_rect(fill = scales::alpha("white", 0.7), color = NA),  # Removed the legend outline
+        legend.background = element_rect(fill = scales::alpha("white", 1), color = NA),  # Removed the legend outline
         legend.margin = margin(0.1, 0.1, 0.1, 0.1),
-        #legend.key.size = unit(0.5, "lines"),  # Increased legend key size
+        legend.key.height = unit(0.5, "lines"),  # Increased legend key size
         legend.text = element_text(size = 8),  # Increased legend text size
         legend.title = element_text(size = 8, face = "plain"),  # Increased legend title size and made it bold
         axis.title = element_text(size = 8, face = "plain", margin = margin(t = 2, b = 2)),
@@ -188,7 +192,7 @@ p <- ggplot(df_longse, aes(time, perc_top_cond, colour = condition)) +
         plot.margin = unit(c(0, 0, 0, 0), "mm"),
         axis.title.x = element_text(margin = margin(t = 2)),
         axis.title.y = element_text(margin = margin(r = 2))) +
-  labs(x = "Time (minutes)", y = "Percentage at top") +
+  labs(x = "Time (minutes)", y = "Percentage at top", color = element_blank(), linetype = element_blank(), shape = element_blank(), fill = element_blank()) +
   scale_color_brewer(palette = "Set2",
                      labels = c("a" = "Agar ancestry, Agar growth",
                                 "b" = "Agar ancestry, Scaffold growth",
@@ -210,9 +214,10 @@ p <- ggplot(df_longse, aes(time, perc_top_cond, colour = condition)) +
                                 "c" = "Scaffold ancestry, Scaffold growth",
                                 "d" = "Scaffold ancestry, Agar growth")) +
   scale_x_continuous(breaks = c(0, 60, 120, 180), labels = c("0", "60", "120", "180")) +
-  scale_y_continuous(labels = function(x) ifelse(x == 0, "0", sprintf("%.1f", x)))
+  scale_y_continuous(labels = function(x) ifelse(x == 0, "0", sprintf("%.1f", x)))+
+  guides(color = guide_legend(override.aes = list(size = 2)))
 
-ggsave("C:/Users/aurel/Documents/Apples/burrowing/av_timetotop_paper.png", p, dpi = 300, bg = "white", width = 65, height = 60, units = "mm")
+ggsave("C:/Users/aurel/Documents/Apples/burrowing/av_timetotop_paper.png", p, dpi = 300, bg = "white", width = 65, height = 50, units = "mm")
 
 
 
@@ -252,8 +257,8 @@ scaffold_color <- "#FC8D62"  # Light orange from Set2 palette
 
 png("av_timetotop_paper_ancestry.png", width = 650, height = 900)
 
-ggplot(df_clean, aes(x = growing, y = timetotop_minutes, fill = as.factor(growing))) +
-  geom_boxplot() +
+p <- ggplot(df_clean, aes(x = growing, y = timetotop_minutes, fill = as.factor(growing))) +
+  geom_boxplot(lwd = 0.1, outlier.size = 0.01) +
   facet_wrap2(
     ~ ancestry,
     scales = "free_x",
@@ -264,39 +269,42 @@ ggplot(df_clean, aes(x = growing, y = timetotop_minutes, fill = as.factor(growin
         element_rect(fill = scaffold_color, color = NA)
       ),
       text_x = list(
-        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 8)),
-        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 5))
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 0, b = 1)),
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 0, b = 0))
       )
     ),
-    labeller = labeller(ancestry = c("agar" = "Agar ancestry", "scaffold" = "Scaffold ancestry"))
+    labeller = labeller(ancestry = c("agar" = "Agar\nancestry", "scaffold" = "Scaffold\nancestry"))
   ) +
   labs(
     y = "Time to top (minutes)",
-    x = "Growing condition",
+    x = "Growing habitat",
   ) +
   scale_fill_manual(values = c("agar" = agar_color, "scaffold" = scaffold_color)) +
   scale_x_discrete(labels = c("agar" = "Agar", "scaffold" = "Scaffold")) +
   theme_minimal() +
   theme(
-    text = element_text(size = 14),
-    axis.text.y = element_text(size = 18),
-    axis.text.x = element_text(size = 20),
-    axis.title = element_text(size = 22, face = "plain", margin = margin(t = 22, b = 20)),
-    axis.title.x = element_text(margin = margin(t = 20)),
-    axis.title.y = element_text(margin = margin(r = 20)),
+    text = element_text(size = 8, color = "black"),
+    axis.text.y = element_text(size = 8, color = "black"),
+    axis.text.x = element_text(size = 8, face = "plain", angle = 45, margin = margin(t = -5, b = 0), hjust = 1, color = "black"),
+    #axis.title = element_text(size = 8, face = "plain", angle = 45, margin = margin(t = -5, b = 0), hjust = 1, color = "black"),
+    axis.title.x = element_text(margin = margin(t = 2)),
+    axis.title.y = element_text(margin = margin(r = 2)),
     legend.position = "none",
     panel.background = element_rect(fill = "white", color = NA),
     plot.background = element_rect(fill = "white", color = NA),
-    panel.spacing = unit(0.5, "lines"),
+    #panel.spacing = unit(0.5, "lines"),
     strip.background = element_blank(),
-    strip.text = element_text(size = 18, face = "plain"),
-    strip.text.x = element_text(margin = margin(t = 5, b = 5)),
-    aspect.ratio = 3,
-    plot.margin = unit(c(0.25, 0.25, 0.25, 0.25), "cm"),
+    #strip.text = element_text(size = 18, face = "plain"),
+    strip.text.x = element_text(margin = margin(t = 0, b = 0)),
+    #aspect.ratio = 3,
+    plot.margin = unit(c(0, 0, 0, 0), "mm"),
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank(),
-    panel.grid.major.y = element_line(color = "gray90"),
-    panel.grid.minor.y = element_line(color = "gray95")
+    #panel.grid.major.y = element_line(color = "gray90"),
+    panel.grid.minor.y = element_blank()
   )
+
+ggsave("C:/Users/aurel/Documents/Apples/burrowing/av_timetotop_paper_ancestry.png", p, dpi = 300, bg = "white", width = 35, height = 60, units = "mm")
+
 
 dev.off()

@@ -7,6 +7,7 @@ library(lme4)
 
 xl_file = "oxidativestress_data.xlsx"
 df <- as.data.frame(read.xlsx(xl_file))
+df$condition <- factor(df$condition, levels = c("a", "b", "d", "c"))
 
 df_clean <- group_by(df, day, condition, replicate) %>%
   mutate(deadatstart = alive == 0 & time_hours == 0) %>%
@@ -285,17 +286,17 @@ summary(posthoc)
 #Percentage dead over time
 png("av_percentdead_paper.png", width = 950, height = 800)
 
-ggplot(df_with_se, aes(x = x_pos, y = mean_perc_dead, color = condition, group = condition)) +
+p <- ggplot(df_with_se, aes(x = x_pos, y = mean_perc_dead, color = condition, group = condition)) +
   geom_errorbar(
     aes(ymin = mean_perc_dead - se_perc_dead, 
         ymax = mean_perc_dead + se_perc_dead),
     width = 0.1,
-    size = 0.75
+    size = 0.3
   ) +
-  geom_line(aes(linetype = condition), linewidth = 0.75) +
-  geom_point(aes(shape = condition), size = 5) +
+  geom_line(aes(linetype = condition), linewidth = 0.3) +
+  geom_point(aes(shape = condition), size = 2, stroke = 0.1) +
   scale_x_continuous(
-   # breaks = unique(df_with_se$x_pos),
+    breaks = unique(df_with_se$time_hours),
     labels = unique(df_with_se$time_hours)
   ) +
   scale_y_continuous(labels = scales::number_format(accuracy = 0.01, decimal.mark = ".", drop0trailing = TRUE), limits = c(0, 1)) +
@@ -311,21 +312,22 @@ ggplot(df_with_se, aes(x = x_pos, y = mean_perc_dead, color = condition, group =
   ) +
   theme_minimal() +
   theme(
-    legend.position = c(0.2, 0.9),  # Move legend to top left corner
+    legend.position = "none",  # Move legend to top left corner
     legend.box = "vertical",
-    legend.margin = margin(6, 6, 6, 6),
+    legend.margin = margin(0.1, 0.1, 0.1, 0.1),
     legend.background = element_rect(fill = "white", color = NA),  # Add a white background to the legend
     legend.key = element_rect(color = NA),  # Remove the border around legend keys
     legend.text = element_text(size = 16),  # Increased legend text size
     legend.title = element_text(size = 18, face = "plain"),  # Increased legend title size and made it bold
     legend.key.size = unit(1, "cm"),  # Increased legend key size
-    aspect.ratio = 0.9,
-    panel.grid.major.x = element_line(color = "gray90"),
+    #aspect.ratio = 0.9,
+    #panel.grid.major.x = element_line(color = "gray90"),
+    plot.margin = unit(c(0, 0, 0, 0), "mm"),
     panel.grid.minor.x = element_blank(),
-    axis.text.x = element_text(size = 20),
-    axis.text.y = element_text(size = 20),
-    axis.title.x = element_text(size = 22, margin = margin(t = 20)),
-    axis.title.y = element_text(size = 22, margin = margin(r = 20))
+    axis.text.x = element_text(size = 8),
+    axis.text.y = element_text(size = 8),
+    axis.title.x = element_text(size = 8, margin = margin(t = 2)),
+    axis.title.y = element_text(size = 8, margin = margin(r = 2))
   ) +
   guides(
     color = guide_legend(ncol = 1, override.aes = list(linetype = line_types, shape = point_shapes)),
@@ -335,17 +337,23 @@ ggplot(df_with_se, aes(x = x_pos, y = mean_perc_dead, color = condition, group =
   scale_color_brewer(palette = "Set2",
                      labels = c("a" = "Agar ancestry, Agar growth",
                                 "b" = "Agar ancestry, Scaffold growth",
-                                "c" = "Scaffold ancestry, Scaffold growth",
-                                "d" = "Scaffold ancestry, Agar growth")) +
+                                "d" = "Scaffold ancestry, Scaffold growth",
+                                "c" = "Scaffold ancestry, Agar growth")) +
   scale_linetype_manual(values = line_types,
                         labels = c("a" = "Agar ancestry, Agar growth",
                                    "b" = "Agar ancestry, Scaffold growth",
-                                   "c" = "Scaffold ancestry, Scaffold growth",
-                                   "d" = "Scaffold ancestry, Agar growth")) +
+                                   "d" = "Scaffold ancestry, Scaffold growth",
+                                   "c" = "Scaffold ancestry, Agar growth")) +
   scale_shape_manual(values = point_shapes,
                      labels = c("a" = "Agar ancestry, Agar growth",
                                 "b" = "Agar ancestry, Scaffold growth",
-                                "c" = "Scaffold ancestry, Scaffold growth",
-                                "d" = "Scaffold ancestry, Agar growth"))
+                                "d" = "Scaffold ancestry, Scaffold growth",
+                                "c" = "Scaffold ancestry, Agar growth"))
+
+ggsave("C:/Users/aurel/Documents/Apples/oxidativestress/av_percentdead_paper.png", p, dpi = 300, bg = "white", width = 65, height = 50, units = "mm")
+
+
+
+
 
 dev.off()

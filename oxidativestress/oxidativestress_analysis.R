@@ -294,15 +294,38 @@ p <- ggplot(df_with_se, aes(x = x_pos, y = mean_perc_dead, color = condition, gr
     size = 0.3
   ) +
   geom_line(aes(linetype = condition), linewidth = 0.3) +
-  geom_point(aes(shape = condition), size = 2, stroke = 0.1) +
+  geom_point(aes(shape = condition, fill = condition), size = 2, stroke = 0.1) +
   scale_x_continuous(
     breaks = unique(df_with_se$time_hours),
     labels = unique(df_with_se$time_hours)
   ) +
   scale_y_continuous(labels = scales::number_format(accuracy = 0.01, decimal.mark = ".", drop0trailing = TRUE), limits = c(0, 1)) +
-  scale_color_brewer(palette = "Set2") +
-  scale_linetype_manual(values = line_types) +
-  scale_shape_manual(values = point_shapes) +
+  scale_color_brewer(palette = "Set2", limits = c("a","b","d","c"),
+                     labels = c("a" = "Agar ancestry, Agar growth",
+                                "b" = "Agar ancestry, Scaffold growth",
+                                "d" = "Scaffold ancestry, Agar growth",
+                                "c" = "Scaffold ancestry, Scaffold growth")) +
+  scale_fill_manual(values = c("a" = "#66C2A5",
+                                 "b" = "#FC8D62",
+                                 "d" = "#8DA0CB",
+                                 "c" = "#E78AC3"),
+                     limits = c("a","b","d","c"),
+                     labels = c("a" = "Agar ancestry, Agar growth",
+                                "b" = "Agar ancestry, Scaffold growth",
+                                "d" = "Scaffold ancestry, Agar growth",
+                                "c" = "Scaffold ancestry, Scaffold growth")) +
+  scale_linetype_manual(values = c("a" = "solid", "b" = "dashed", "d" = "dotted", "c" = "dotdash"),
+                        limits = c("a","b","d","c"),
+                        labels = c("a" = "Agar ancestry, Agar growth",
+                                   "b" = "Agar ancestry, Scaffold growth",
+                                   "d" = "Scaffold ancestry, Agar growth",
+                                   "c" = "Scaffold ancestry, Scaffold growth")) +
+  scale_shape_manual(values = c("a" = 21, "b" = 24, "d" = 23, "c" = 22),
+                     limits = c("a","b","d","c"),
+                     labels = c("a" = "Agar ancestry, Agar growth",
+                                "b" = "Agar ancestry, Scaffold growth",
+                                "d" = "Scaffold ancestry, Agar growth",
+                                "c" = "Scaffold ancestry, Scaffold growth")) +
   labs(
     x = "Time (Hours)",
     y = "Percentage of dead animals",
@@ -317,38 +340,23 @@ p <- ggplot(df_with_se, aes(x = x_pos, y = mean_perc_dead, color = condition, gr
     legend.margin = margin(0.1, 0.1, 0.1, 0.1),
     legend.background = element_rect(fill = "white", color = NA),  # Add a white background to the legend
     legend.key = element_rect(color = NA),  # Remove the border around legend keys
-    legend.text = element_text(size = 16),  # Increased legend text size
-    legend.title = element_text(size = 18, face = "plain"),  # Increased legend title size and made it bold
+    legend.text = element_text(size = 8),  # Increased legend text size
+    legend.title = element_text(size = 8, face = "plain"),  # Increased legend title size and made it bold
     legend.key.size = unit(1, "cm"),  # Increased legend key size
     #aspect.ratio = 0.9,
     #panel.grid.major.x = element_line(color = "gray90"),
     plot.margin = unit(c(0, 0, 0, 0), "mm"),
     panel.grid.minor.x = element_blank(),
-    axis.text.x = element_text(size = 8),
-    axis.text.y = element_text(size = 8),
-    axis.title.x = element_text(size = 8, margin = margin(t = 2)),
-    axis.title.y = element_text(size = 8, margin = margin(r = 2))
+    axis.text.x = element_text(size = 8, color = "black"),
+    axis.text.y = element_text(size = 8, color = "black"),
+    axis.title.x = element_text(size = 8, margin = margin(t = 2), color = "black"),
+    axis.title.y = element_text(size = 8, margin = margin(r = 2), color = "black")
   ) +
   guides(
     color = guide_legend(ncol = 1, override.aes = list(linetype = line_types, shape = point_shapes)),
     linetype = "none",
     shape = "none"
-  ) +
-  scale_color_brewer(palette = "Set2",
-                     labels = c("a" = "Agar ancestry, Agar growth",
-                                "b" = "Agar ancestry, Scaffold growth",
-                                "d" = "Scaffold ancestry, Scaffold growth",
-                                "c" = "Scaffold ancestry, Agar growth")) +
-  scale_linetype_manual(values = line_types,
-                        labels = c("a" = "Agar ancestry, Agar growth",
-                                   "b" = "Agar ancestry, Scaffold growth",
-                                   "d" = "Scaffold ancestry, Scaffold growth",
-                                   "c" = "Scaffold ancestry, Agar growth")) +
-  scale_shape_manual(values = point_shapes,
-                     labels = c("a" = "Agar ancestry, Agar growth",
-                                "b" = "Agar ancestry, Scaffold growth",
-                                "d" = "Scaffold ancestry, Scaffold growth",
-                                "c" = "Scaffold ancestry, Agar growth"))
+  )
 
 ggsave("C:/Users/aurel/Documents/Apples/oxidativestress/av_percentdead_paper.png", p, dpi = 300, bg = "white", width = 65, height = 50, units = "mm")
 

@@ -242,8 +242,22 @@ df_swim <- df_swim %>%
       TRUE ~ "scaffold"
     )
   )
+  # Remove one random dayreplicate per condition b, c and d ----------------------------------
+set.seed(123) # Ensures the random choice is reproducible; adjust/remove if true randomness desired
 
-sample_sizes <- df_swim %>%
+# Identify one random dayreplicate *per condition* (b, c, d)
+to_remove <- df_swim %>%
+  filter(condition %in% c("b", "c", "d")) %>%
+  distinct(condition, dayreplicate) %>%
+  group_by(condition) %>%
+  slice_sample(n = 1) %>%
+  ungroup()
+
+# Remove exactly those specific (condition, dayreplicate) pairs
+df_swim_plot <- df_swim %>%
+  anti_join(to_remove, by = c("condition", "dayreplicate"))
+
+sample_sizes <- df_swim_plot %>%
   group_by(ancestry, growing, mc_concentration) %>%
   summarise(n = n_distinct(dayreplicate))
 
@@ -256,8 +270,8 @@ png("swimming/wellplate/swimming_wellplate_bends_histogram_by_condition_paper.pn
 agar_color <- "#66C2A5"      # Light green from Set2 palette
 scaffold_color <- "#FC8D62"  # Light orange from Set2 palette
 
-ggplot(df_swim %>% filter(mc_concentration == 0), aes(x = bends, fill = as.factor(growing))) +
-  geom_histogram(binwidth = 1, position = "dodge", color = "black") +
+p <- ggplot(df_swim_plot %>% filter(mc_concentration == 0), aes(x = bends, fill = as.factor(growing))) +
+  geom_histogram(binwidth = 1, position = "dodge", color = "black", linewidth = 0.1) +
   facet_nested(
     ~ ancestry + growing,
     scales = "fixed",
@@ -267,12 +281,12 @@ ggplot(df_swim %>% filter(mc_concentration == 0), aes(x = bends, fill = as.facto
     ),
     strip = strip_nested(
       background_x = list(
-        element_rect(fill = agar_color, color = "white", linewidth = 1.5),
-        element_rect(fill = scaffold_color, color = "white", linewidth = 1.5)
+        element_rect(fill = agar_color, color = "white", linewidth = 0.8),
+        element_rect(fill = scaffold_color, color = "white", linewidth = 0.8)
       ),
       text_x = list(
-        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 8)),
-        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 5))
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 2, b = 2)),
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 2, b = 2))
       )
     )
   ) +
@@ -284,25 +298,29 @@ ggplot(df_swim %>% filter(mc_concentration == 0), aes(x = bends, fill = as.facto
   scale_x_continuous(breaks = seq(0, max(df_swim$bends[df_swim$mc_concentration == 0]), by = 5)) +
   theme_minimal() +
   theme(
-    text = element_text(size = 14),
-    axis.text.y = element_text(size = 18),
-    axis.text.x = element_text(size = 20),
-    axis.title = element_text(size = 22, face = "plain", margin = margin(t = 22, b = 20)),
-    axis.title.x = element_text(margin = margin(t = 20)),
-    axis.title.y = element_text(margin = margin(r = 20)),
+    text = element_text(size = 8),
+    axis.text.y = element_text(size = 8, color = "black"),
+    axis.text.x = element_text(size = 8, color = "black"),
+    #axis.title = element_text(size = 8, face = "plain", margin = margin(t = 22, b = 20)),
+    axis.title.x = element_text(margin = margin(t = 2)),
+    axis.title.y = element_text(margin = margin(r = 2)),
     legend.position = "none",
     panel.background = element_rect(fill = "white", color = NA),
     plot.background = element_rect(fill = "white", color = NA),
-    panel.spacing = unit(2, "lines"),
+    panel.spacing = unit(0.1, "lines"),
     strip.background = element_blank(),
-    strip.text = element_text(size = 18, face = "bold"),
-    strip.text.x = element_text(margin = margin(t = 5, b = 5)),
-    plot.margin = unit(c(0.25, 0.25, 0.25, 0.25), "cm"),
+    #strip.text = element_text(size = 18, face = "bold"),
+    strip.text.x = element_text(margin = margin(t = 0, b = 0)),
+    plot.margin = unit(c(0, 0, 0, 0), "mm"),
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank(),
-    panel.grid.major.y = element_line(color = "gray90"),
-    panel.grid.minor.y = element_line(color = "gray95")
+    ##panel.grid.major.y = element_line(color = "gray90"),
+    ##panel.grid.minor.y = element_line(color = "gray95")
   )
+
+ggsave("C:/Users/aurel/Documents/Apples/swimming/wellplate/swimming_wellplate_bends_histogram_by_condition_paper.png", p, dpi = 300, bg = "white", width = 100, height = 60, units = "mm")
+
+
 
 dev.off()
 
@@ -340,8 +358,9 @@ png("swimming/wellplate/swimming_wellplate_percent_quiescence_by_condition.png",
 agar_color <- "#66C2A5"      # Light green from Set2 palette
 scaffold_color <- "#FC8D62"  # Light orange from Set2 palette
 
-ggplot(df_proportions_filtered, aes(x = growing, y = pqui, fill = as.factor(growing))) +
-  geom_boxplot() +
+
+p <- ggplot(df_proportions_filtered, aes(x = growing, y = pqui, fill = as.factor(growing))) +
+  geom_boxplot(lwd = 0.1, outlier.size = 0.01) +
   facet_wrap2(
     ~ ancestry,
     scales = "free_x",
@@ -352,41 +371,45 @@ ggplot(df_proportions_filtered, aes(x = growing, y = pqui, fill = as.factor(grow
         element_rect(fill = scaffold_color, color = NA)
       ),
       text_x = list(
-        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 8)),
-        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 5))
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 1, b = 2, l = 1, r = 1)),
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 1, b = 0, l = 1, r = 1))
       )
     ),
-    labeller = labeller(ancestry = c("agar" = "Agar ancestry", "scaffold" = "Scaffold ancestry"))
+    labeller = labeller(ancestry = c("agar" = "Agar\nancestry", "scaffold" = "Scaffold\nancestry"))
   ) +
   labs(
     y = "Percent of time in quiescence",
-    x = "Growing condition",
+    x = "Growing habitat",
   ) +
   scale_fill_manual(values = c("agar" = agar_color, "scaffold" = scaffold_color)) +
   scale_x_discrete(labels = c("agar" = "Agar", "scaffold" = "Scaffold")) +
   scale_y_continuous(labels = scales::number_format(accuracy = 0.01, decimal.mark = ".", drop0trailing = TRUE), limits = c(0, 1)) +
   theme_minimal() +
   theme(
-    text = element_text(size = 14),
-    axis.text.y = element_text(size = 18),
-    axis.text.x = element_text(size = 20),
-    axis.title = element_text(size = 22, face = "plain", margin = margin(t = 22, b = 20)),
-    axis.title.x = element_text(margin = margin(t = 20)),
-    axis.title.y = element_text(margin = margin(r = 20)),
+    text = element_text(size = 8),
+    axis.text.y = element_text(size = 8, color = "black"),
+    axis.text.x = element_text(size = 8, color = "black", angle = 45, hjust = 1, margin = margin(t = -4, b = 0)),
+    #axis.title = element_text(size = 8, face = "plain", margin = margin(t = 22, b = 20)),
+    axis.title.x = element_text(margin = margin(t = 2)),
+    axis.title.y = element_text(margin = margin(r = 2)),
     legend.position = "none",
     panel.background = element_rect(fill = "white", color = NA),
     plot.background = element_rect(fill = "white", color = NA),
-    panel.spacing = unit(0.5, "lines"),
+    #panel.spacing = unit(0.1, "lines"),
     strip.background = element_blank(),
-    strip.text = element_text(size = 18, face = "plain"),
-    strip.text.x = element_text(margin = margin(t = 5, b = 5)),
-    aspect.ratio = 3,
-    plot.margin = unit(c(0.25, 0.25, 0.25, 0.25), "cm"),
+    #strip.text = element_text(size = 18, face = "plain"),
+    strip.text.x = element_text(margin = margin(t = 0, b = 0)),
+    #aspect.ratio = 3,
+    plot.margin = unit(c(0, 0, 0, 0), "mm"),
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank(),
-    panel.grid.major.y = element_line(color = "gray90"),
-    panel.grid.minor.y = element_line(color = "gray95")
+    ##panel.grid.major.y = element_line(color = "gray90"),
+    ##panel.grid.minor.y = element_line(color = "gray95")
   )
+
+ggsave("C:/Users/aurel/Documents/Apples/swimming/wellplate/swimming_wellplate_percent_quiescence_by_condition.png", p, dpi = 300, bg = "white", width = 35, height = 60, units = "mm")
+
+
 
 dev.off()
 
@@ -398,8 +421,8 @@ png("swimming/wellplate/swimming_wellplate_percent_slow_by_condition.png", width
 agar_color <- "#66C2A5"      # Light green from Set2 palette
 scaffold_color <- "#FC8D62"  # Light orange from Set2 palette
 
-ggplot(df_proportions_filtered, aes(x = growing, y = pslow, fill = as.factor(growing))) +
-  geom_boxplot() +
+p <- ggplot(df_proportions_filtered, aes(x = growing, y = pslow, fill = as.factor(growing))) +
+  geom_boxplot(lwd = 0.1, outlier.size = 0.01) +
   facet_wrap2(
     ~ ancestry,
     scales = "free_x",
@@ -410,41 +433,44 @@ ggplot(df_proportions_filtered, aes(x = growing, y = pslow, fill = as.factor(gro
         element_rect(fill = scaffold_color, color = NA)
       ),
       text_x = list(
-        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 8)),
-        element_text(color = "#000000", size = 16, face = "plain", margin = margin(t = 5, b = 5))
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 1, b = 2, l = 1, r = 1)),
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 1, b = 0, l = 1, r = 1))
       )
     ),
-    labeller = labeller(ancestry = c("agar" = "Agar ancestry", "scaffold" = "Scaffold ancestry"))
+    labeller = labeller(ancestry = c("agar" = "Agar\nancestry", "scaffold" = "Scaffold\nancestry"))
   ) +
   labs(
     y = "Percent of time in slow swimming",
-    x = "Growing condition",
+    x = "Growing habitat",
   ) +
   scale_fill_manual(values = c("agar" = agar_color, "scaffold" = scaffold_color)) +
   scale_x_discrete(labels = c("agar" = "Agar", "scaffold" = "Scaffold")) +
   scale_y_continuous(labels = scales::number_format(accuracy = 0.01, decimal.mark = ".", drop0trailing = TRUE), limits = c(0, 1)) +
   theme_minimal() +
   theme(
-    text = element_text(size = 14),
-    axis.text.y = element_text(size = 18),
-    axis.text.x = element_text(size = 20),
-    axis.title = element_text(size = 22, face = "plain", margin = margin(t = 22, b = 20)),
-    axis.title.x = element_text(margin = margin(t = 20)),
-    axis.title.y = element_text(margin = margin(r = 20)),
+    text = element_text(size = 8),
+    axis.text.y = element_text(size = 8, color = "black"),
+    axis.text.x = element_text(size = 8, color = "black", angle = 45, hjust = 1, margin = margin(t = -4, b = 0)),
+    #axis.title = element_text(size = 8, face = "plain", margin = margin(t = 22, b = 20)),
+    axis.title.x = element_text(margin = margin(t = 2)),
+    axis.title.y = element_text(margin = margin(r = 2)),
     legend.position = "none",
     panel.background = element_rect(fill = "white", color = NA),
     plot.background = element_rect(fill = "white", color = NA),
-    panel.spacing = unit(0.5, "lines"),
+    #panel.spacing = unit(0.1, "lines"),
     strip.background = element_blank(),
-    strip.text = element_text(size = 18, face = "plain"),
-    strip.text.x = element_text(margin = margin(t = 5, b = 5)),
-    aspect.ratio = 3,
-    plot.margin = unit(c(0.25, 0.25, 0.25, 0.25), "cm"),
+    #strip.text = element_text(size = 18, face = "plain"),
+    strip.text.x = element_text(margin = margin(t = 0, b = 0)),
+    #aspect.ratio = 3,
+    plot.margin = unit(c(0, 0, 0, 0), "mm"),
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank(),
-    panel.grid.major.y = element_line(color = "gray90"),
-    panel.grid.minor.y = element_line(color = "gray95")
+    ##panel.grid.major.y = element_line(color = "gray90"),
+    ##panel.grid.minor.y = element_line(color = "gray95")
   )
+
+ggsave("C:/Users/aurel/Documents/Apples/swimming/wellplate/swimming_wellplate_percent_slow_by_condition.png", p, dpi = 300, bg = "white", width = 35, height = 60, units = "mm")
+
 
 dev.off()
 

@@ -86,7 +86,8 @@ df_long_no6 <- df %>%
 
 df_av <- group_by(df_long_no6, condition) %>%
   filter(timetotop_minutes != -1) %>%
-  summarise(av_timetotop = mean(timetotop_minutes))
+  summarise(av_timetotop = mean(timetotop_minutes),
+            median_timetotop = median(timetotop_minutes))
 
 ggplot(df_long_no6, aes(time, perc_top_cond, colour = condition)) +
   geom_jitter(shape= 16, position=position_jitter(0.018), aes(color = condition), cex = 2.8) +
@@ -177,7 +178,7 @@ p <- ggplot(df_longse, aes(time, perc_top_cond, colour = condition)) +
   geom_errorbar(aes(ymin = perc_top_cond - se, ymax = perc_top_cond + se), width = 2, size = 0.3) +
   theme_minimal() +
   theme(#legend.position = c(0, 1),  # Moved the legend to the top left
-        legend.position = "none",
+        #legend.position = "none",
         legend.justification = c(0, 1),
         text = element_text(size = 8, color = "black"),
         axis.text.y = element_text(size = 8, color = "black"),
@@ -193,26 +194,35 @@ p <- ggplot(df_longse, aes(time, perc_top_cond, colour = condition)) +
         axis.title.x = element_text(margin = margin(t = 2)),
         axis.title.y = element_text(margin = margin(r = 2))) +
   labs(x = "Time (minutes)", y = "Percentage at top", color = element_blank(), linetype = element_blank(), shape = element_blank(), fill = element_blank()) +
-  scale_color_brewer(palette = "Set2",
+  scale_color_brewer(palette = "Set2", limits = c("a","b","d","c"),
                      labels = c("a" = "Agar ancestry, Agar growth",
                                 "b" = "Agar ancestry, Scaffold growth",
-                                "c" = "Scaffold ancestry, Scaffold growth",
-                                "d" = "Scaffold ancestry, Agar growth")) +
-  scale_fill_brewer(palette = "Set2",
+                                "d" = "Scaffold ancestry, Agar growth",
+                                "c" = "Scaffold ancestry, Scaffold growth")) +
+  scale_fill_manual(values = c("a" = "#66C2A5",
+                               "b" = "#FC8D62",
+                               "d" = "#8DA0CB",
+                               "c" = "#E78AC3"),
+                    limits = c("a","b","d","c"),
                     labels = c("a" = "Agar ancestry, Agar growth",
                                "b" = "Agar ancestry, Scaffold growth",
-                               "c" = "Scaffold ancestry, Scaffold growth",
-                               "d" = "Scaffold ancestry, Agar growth")) +
-  scale_linetype_manual(values = c("solid", "dashed", "dotted", "dotdash", "longdash", "twodash"),
+                               "d" = "Scaffold ancestry, Agar growth",
+                               "c" = "Scaffold ancestry, Scaffold growth")) +
+  scale_linetype_manual(values = c("solid", "dashed", "dotted", "dotdash"),
+                        limits = c("a","b","d","c"),
                         labels = c("a" = "Agar ancestry, Agar growth",
                                    "b" = "Agar ancestry, Scaffold growth",
-                                   "c" = "Scaffold ancestry, Scaffold growth",
-                                   "d" = "Scaffold ancestry, Agar growth")) +
-  scale_shape_manual(values = c(21, 22, 23, 24, 25, 16),
-                     labels = c("a" = "Agar ancestry, Agar growth",
-                                "b" = "Agar ancestry, Scaffold growth",
-                                "c" = "Scaffold ancestry, Scaffold growth",
-                                "d" = "Scaffold ancestry, Agar growth")) +
+                                   "d" = "Scaffold ancestry, Agar growth",
+                                   "c" = "Scaffold ancestry, Scaffold growth")) +
+  scale_shape_manual(values = c("a" = 21,  # circle
+                                "b" = 24,  # triangle
+                                "d" = 23,  # diamond
+                                "c" = 22), # square
+                      limits = c("a","b","d","c"),
+                      labels = c("a" = "Agar ancestry, Agar growth",
+                                 "b" = "Agar ancestry, Scaffold growth",
+                                 "d" = "Scaffold ancestry, Agar growth",
+                                 "c" = "Scaffold ancestry, Scaffold growth")) +
   scale_x_continuous(breaks = c(0, 60, 120, 180), labels = c("0", "60", "120", "180")) +
   scale_y_continuous(labels = function(x) ifelse(x == 0, "0", sprintf("%.1f", x)))+
   guides(color = guide_legend(override.aes = list(size = 2)))
@@ -236,19 +246,18 @@ df_clean <- df_clean %>%
       condition %in% c("a", "d") ~ "agar",
       TRUE ~ "scaffold"
     )
-  ) %>%
-  mutate(
-    ancestry = case_when(
-      condition %in% c("a", "b") ~ "agar",
-      TRUE ~ "scaffold"
-    ),
-    growing = case_when(
-      condition %in% c("a", "d") ~ "agar",
-      TRUE ~ "scaffold"
-    )
   )
 
+# Calculate and print mean and median
+summary_stats <- df_clean %>%
+  group_by(ancestry, growing) %>%
+  summarise(
+    mean_timetotop = mean(timetotop_minutes, na.rm = TRUE),
+    median_timetotop = median(timetotop_minutes, na.rm = TRUE),
+    .groups = 'drop'
+  )
 
+print(summary_stats)
 
 
 

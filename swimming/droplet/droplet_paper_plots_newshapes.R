@@ -2,113 +2,107 @@ library(ggplot2)
 library(dplyr)
 library(openxlsx)
 library(ggh4x)
+library(tidyr)
 
-xl_file = "swimming/droplet/combined_data_all.csv"
-df <- as.data.frame(read.csv(xl_file))
-
-
-detect_z_axis_turns <- function(df) {
-  # Group by unique video ID
-  grouped <- df %>% group_by(viscosity, condition, id)
+# --- NEW: Custom Shape Classification Function ---
+# This function translates the logic from the Python script to classify shapes
+# based on amplitude and curvature thresholds.
+classify_shapes_custom_r <- function(df, 
+                                     amp_col = "smoothed_max_amplitudes", 
+                                     curv_col = "curvature_time_series",
+                                     amp_high_thresh = 22.0, 
+                                     amp_mod_thresh = 15.0,
+                                     curv_high_thresh = 1.8, 
+                                     curv_mod_thresh = 0.5) {
   
-  # Function to detect z-axis turns for each group
-  detect_turns <- function(group) {
-    mean_length <- mean(group$worm_lengths)
-    std_length <- sd(group$worm_lengths)
-    threshold <- mean_length - std_length
-    tibble(
-      z_axis_turn = group$worm_lengths < threshold,
-      video_id = paste(group$viscosity[1], group$condition[1], group$id[1], sep = "_")
-    )
+  # Ensure the required columns exist
+  if (!amp_col %in% names(df) || !curv_col %in% names(df)) {
+    stop("Amplitude or curvature columns not found in the dataframe.")
   }
   
-  # Apply the function to each group
-  result <- grouped %>% 
-    do(detect_turns(.)) %>% 
-    ungroup()
-  
-  # Add the results as new columns
-  df <- df %>%
+  df %>%
     mutate(
-      z_axis_turn = result$z_axis_turn,
-      video_id = result$video_id
+      # The case_when statement is the R equivalent of Python's if/elif/else chain
+      custom_shape = case_when(
+        # O-shape: High amplitude + high curvature
+        .data[[amp_col]] >= amp_high_thresh & abs(.data[[curv_col]]) >= curv_high_thresh ~ "O-shape",
+        
+        # 6-shape: Moderate amplitude + high curvature
+        .data[[amp_col]] >= amp_mod_thresh & .data[[amp_col]] < amp_high_thresh & abs(.data[[curv_col]]) >= curv_high_thresh ~ "6-shape",
+        
+        # U-shape: High amplitude + moderate curvature
+        .data[[amp_col]] >= amp_high_thresh & abs(.data[[curv_col]]) >= curv_mod_thresh & abs(.data[[curv_col]]) < curv_high_thresh ~ "U-shape",
+        
+        # C-shape: Moderate amplitude + moderate curvature
+        .data[[amp_col]] >= amp_mod_thresh & .data[[amp_col]] < amp_high_thresh & abs(.data[[curv_col]]) >= curv_mod_thresh & abs(.data[[curv_col]]) < curv_high_thresh ~ "C-shape",
+        
+        # S-shape: Everything else
+        TRUE ~ "S-shape"
+      )
     )
-  
-  return(df)
 }
 
-# Apply the function to the dataframe
-df_z <- detect_z_axis_turns(df)
 
-# Count unique occurrences of z_axis_turn
-z_turn_counts <- df_z %>%
-  group_by(z_axis_turn) %>%
-  summarise(count = n()) %>%
-  ungroup() %>%
-  mutate(percentage = count / sum(count) * 100) %>%
-  filter(z_axis_turn == TRUE) %>%
-  pull(percentage) #13.63618
+# --- Data Loading and Initial Processing ---
+
+# Define file path and load data
+xl_file <- "swimming/droplet/combined_data_all.csv"
+df <- as.data.frame(read.csv(xl_file))
+
+# --- APPLY THE NEW SHAPE CLASSIFICATION ---
+# We use the same thresholds as specified in the Python script's main() function.
+# This adds a new column called 'custom_shape' to the dataframe.
+df <- classify_shapes_custom_r(
+  df,
+  amp_high_thresh = 22.0,
+  amp_mod_thresh = 15.0,
+  curv_high_thresh = 1.8,
+  curv_mod_thresh = 0.5
+)
 
 
-  
+# --- NEW: Calculate Percentages for Custom Shapes ---
 
-# Calculate shape percentages for each video
-shape_percentages <- df_z %>%
+# Calculate percentages for the new custom shapes for each video
+custom_shape_percentages <- df %>%
   group_by(viscosity, condition, id) %>%
   summarise(
     total_frames = n(),
-    z_axis_turns = sum(z_axis_turn),
-    non_z_axis_frames = total_frames - z_axis_turns,
-    c_shapes = sum(shape == "b'C-shape'" & !z_axis_turn),
-    s_shapes = sum(shape == "b'S-shape'" & !z_axis_turn), 
-    straight = sum(shape == "b'Straight'" & !z_axis_turn),
-    z_axis_turn_percentage = (z_axis_turns / total_frames) * 100,
-    c_shape_percentage = (c_shapes / total_frames) * 100,
-    s_shape_percentage = (s_shapes / total_frames) * 100,
-    straight_percentage = (straight / total_frames) * 100,
-    c_shape_percentage_excluding_z = ifelse(non_z_axis_frames > 0, 
-                                          (c_shapes / non_z_axis_frames) * 100, 0),
-    s_shape_percentage_excluding_z = ifelse(non_z_axis_frames > 0,
-                                          (s_shapes / non_z_axis_frames) * 100, 0),
-    straight_percentage_excluding_z = ifelse(non_z_axis_frames > 0,
-                                           (straight / non_z_axis_frames) * 100, 0)
+
+    # Count each of the new custom shapes, excluding z-axis turns
+    o_shapes = sum(custom_shape == "O-shape", na.rm = TRUE),
+    `6_shapes` = sum(custom_shape == "6-shape", na.rm = TRUE), # Use backticks for names starting with a number
+    u_shapes = sum(custom_shape == "U-shape", na.rm = TRUE),
+    c_shapes_custom = sum(custom_shape == "C-shape", na.rm = TRUE),
+    s_shapes_custom = sum(custom_shape == "S-shape", na.rm = TRUE),
+    
+    # Calculate proportion of total frames for each shape (0-1 scale)
+    o_shape_percentage = (o_shapes / total_frames),
+    `6_shape_percentage` = (`6_shapes` / total_frames),
+    u_shape_percentage = (u_shapes / total_frames),
+    c_shape_custom_percentage = (c_shapes_custom / total_frames),
+    s_shape_custom_percentage = (s_shapes_custom / total_frames),
+    
   )
 
-# Join percentages back to original dataframe
-df_final <- df_z %>%
-  left_join(shape_percentages, by = c("viscosity", "condition", "id"))
+# Join the new custom shape percentages back to the main dataframe
+df_final <- df %>%
+  left_join(custom_shape_percentages, by = c("viscosity", "condition", "id"))
 
-# Save results
-write.csv(df_final, "swimming/droplet/combined_data_with_shape_percentages.csv", row.names = FALSE)
+# Save the final results to a new CSV file
+write.csv(df_final, "swimming/droplet/combined_data_with_custom_shape_percentages.csv", row.names = FALSE)
 
-
-####New shape percentages calculations####
+# You can now proceed with any further analysis or plotting using the new 'custom_shape' column
+# and the calculated percentages.
 
 
 
 
 ######Plots for paper######
 
-#Shape percentages by viscosity
-# Create plot for shape percentages by viscosity
-df_final <- df_final %>%
-  mutate(
-    ancestry = case_when(
-      condition %in% c("a", "b") ~ "agar",
-      TRUE ~ "scaffold"
-    ),
-    growing = case_when(
-      condition %in% c("a", "d") ~ "agar",
-      TRUE ~ "scaffold"
-    )
-  )
-# Order viscosities with visc05 at end
-viscosity_order <- c(sort(unique(shape_percentages$viscosity)))
-
-# Reshape data for plotting
-library(tidyr)  # For pivot_longer
-
-plot_data <- shape_percentages %>%
+# Shape percentages by viscosity
+# Reshape data for plotting with the new custom shapes
+plot_data <- custom_shape_percentages %>%
   mutate(
     ancestry = case_when(
       condition %in% c("a", "b") ~ "Agar ancestry",
@@ -119,39 +113,43 @@ plot_data <- shape_percentages %>%
       TRUE ~ "Scaffold growth"
     )
   ) %>%
+  # Pivot the new shape percentage columns
   pivot_longer(
-    cols = c(straight_percentage_excluding_z, s_shape_percentage_excluding_z,
-             c_shape_percentage_excluding_z, z_axis_turn_percentage),
+    cols = c(o_shape_percentage, `6_shape_percentage`, u_shape_percentage, 
+             c_shape_custom_percentage, s_shape_custom_percentage),
     names_to = "shape_type",
     values_to = "percentage"
   ) %>%
+  # Create clean labels for the plot's x-axis
   mutate(
-    shape_type = case_when(
-      shape_type == "straight_percentage_excluding_z" ~ "Straight",
-      shape_type == "s_shape_percentage_excluding_z" ~ "S-shape",
-      shape_type == "c_shape_percentage_excluding_z" ~ "C-shape",
-      shape_type == "z_axis_turn_percentage" ~ "Z-axis Turn"
-    )
+    shape_type = factor(case_when(
+      shape_type == "o_shape_percentage" ~ "O",
+      shape_type == "6_shape_percentage" ~ "6",
+      shape_type == "u_shape_percentage" ~ "U",
+      shape_type == "c_shape_custom_percentage" ~ "C",
+      shape_type == "s_shape_custom_percentage" ~ "S"
+    ), levels = c("O", "6", "U", "C", "S")) # Set factor levels for a logical order
   )
 
-
+# Calculate sample sizes for verification
 sample_sizes <- plot_data %>%
   group_by(condition, viscosity) %>%
   summarise(n = n_distinct(id))
 
-write.table(sample_sizes, "clipboard", sep="\t", row.names=FALSE)
+# Optional: Output sample sizes to clipboard or console
+# write.table(sample_sizes, "clipboard", sep="\t", row.names=FALSE)
 print(sample_sizes)
 
 
-# Create plot
-png("swimming/droplet/plots/shape_percentage_boxplot_by_viscosity_excluding_z.png", 
+# Create and save the plot
+png("swimming/droplet/plots/custom_shape_percentage_boxplot_by_viscosity.png", 
     width = 2000, height = 1800)
 
-agar_color <- "#66C2A5"      # Light green from Set2 palette
-scaffold_color <- "#FC8D62"  # Light orange from Set2 palette
+agar_color <- "#66C2A5"
+scaffold_color <- "#FC8D62"
 
-ggplot(plot_data, aes(x = shape_type, y = percentage, fill = growing)) +
-  geom_boxplot(color = "black") +
+p <- ggplot(plot_data, aes(x = shape_type, y = percentage, fill = growing)) +
+  geom_boxplot(lwd = 0.1, outlier.size = 0.01) +
   facet_nested(
     viscosity ~ ancestry + growing,
     scales = "fixed",
@@ -166,46 +164,53 @@ ggplot(plot_data, aes(x = shape_type, y = percentage, fill = growing)) +
     ),
     strip = strip_nested(
       background_x = list(
-        element_rect(fill = agar_color, color = "white", linewidth = 1.5),
-        element_rect(fill = scaffold_color, color = "white", linewidth = 1.5)
+        element_rect(fill = agar_color, color = "white", linewidth = 0.5),
+        element_rect(fill = scaffold_color, color = "white", linewidth = 0.5)
       ),
       background_y = element_rect(fill = "gray85", color = "white", linewidth = 1.5),
       text_x = list(
-        element_text(color = "#000000", size = 24, face = "plain", margin = margin(t = 5, b = 8)),
-        element_text(color = "#000000", size = 24, face = "plain", margin = margin(t = 5, b = 5))
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 1, b = 1)),
+        element_text(color = "#000000", size = 8, face = "plain", margin = margin(t = 1, b = 1))
       )
     )
   ) +
   scale_fill_manual(values = c("Agar growth" = agar_color, "Scaffold growth" = scaffold_color)) +
+  scale_y_continuous(breaks = c(0, 0.2, 0.4, 0.6, 0.8), limits = c(0, 0.95), labels = function(x) ifelse(x == 0, "0", sub("^0\\.", ".", sprintf("%.1f", x)))) +
   labs(
-    x = "Shape type",
-    y = "Percentage of frames"
+    x = "Shape",
+    y = "Proportion of time"
   ) +
   theme_minimal() +
   theme(
-    text = element_text(size = 14),
-    axis.text.y = element_text(size = 22),
-    axis.text.x = element_text(size = 22, angle = 45, hjust = 1),
-    axis.title = element_text(size = 28, face = "plain", margin = margin(t = 22, b = 20)),
-    axis.title.x = element_text(margin = margin(t = 20)),
-    axis.title.y = element_text(margin = margin(r = 20)),
+    text = element_text(size = 8),
+    axis.text.y = element_text(size = 8, color = "black", margin = margin(r = 0)),
+    axis.text.x = element_text(size = 8, color = "black"),
+    #axis.title = element_text(size = 8, face = "plain", margin = margin(t = 22, b = 20)),
+    axis.title.x = element_text(margin = margin(t = 2)),
+    axis.title.y = element_text(margin = margin(r = 1)),
     legend.position = "none",
     panel.background = element_rect(fill = "white", color = NA),
     plot.background = element_rect(fill = "white", color = NA),
-    panel.spacing = unit(1.5, "lines"),
+    panel.spacing = unit(0.1, "lines"),
     strip.background = element_blank(),
-    strip.text = element_text(size = 24, face = "plain"),
-    strip.text.x = element_text(margin = margin(t = 5, b = 5)),
-    plot.margin = unit(c(0.25, 0.25, 0.25, 0.25), "cm"),
+    #strip.text = element_text(size = 24, face = "plain"),
+    strip.text.x = element_text(margin = margin(t = 0, b = 0)),
+    strip.text.y = element_text(margin = margin(l = 2, r = 2)),
+    plot.margin = unit(c(0, 0, 0, 0), "mm"),
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank(),
-    panel.grid.major.y = element_line(color = "gray90"),
-    panel.border = element_rect(color = "black", fill = NA),
-    panel.grid.minor.y = element_line(color = "gray95")
+    ##panel.grid.major.y = element_line(color = "gray90"),
+    panel.border = element_rect(color = "gray50", fill = NA, linewidth = 0.1),
+    panel.grid.minor.y = element_blank()
   )
 
-dev.off()
+ggsave("C:/Users/aurel/Documents/Apples/swimming/droplet/plots/custom_shape_percentage_boxplot_by_viscosity_paper.png", p, dpi = 300, bg = "white", width = 90, height = 70, units = "mm")
 
+
+
+
+
+dev.off()
 
 
 
@@ -309,6 +314,7 @@ p <- ggplot(avg_amplitudes_per_video,
     strip.background = element_blank(),
     #strip.text = element_text(size = 24, face = "plain"),
     strip.text.x = element_text(margin = margin(t = 0, b = 0)),
+    strip.text.y = element_text(margin = margin(l = 1, r = 1)),
     plot.margin = unit(c(0, 0, 0, 0), "mm"),
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank(),
@@ -421,6 +427,7 @@ dev.off()
 
 # Calculate average values per video_id for normalized wavelengths (S-shape)
 avg_normalized_df <- df_final %>%
+  mutate(video_id = paste(viscosity, condition, id, sep = "_")) %>%
   filter(grepl('S-shape', shape, fixed = TRUE)) %>%
   group_by(video_id, condition, viscosity) %>%
   summarise(
@@ -492,6 +499,7 @@ p <- ggplot(avg_normalized_df, aes(x = viscosity, y = normalized_wavelengths, fi
     strip.background = element_blank(),
     #strip.text = element_text(size = 24, face = "plain"),
     strip.text.x = element_text(margin = margin(t = 0, b = 0)),
+    strip.text.y = element_text(margin = margin(l = 1, r = 1)),
     plot.margin = unit(c(0, 0, 0, 0), "mm"),
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank(),

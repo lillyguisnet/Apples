@@ -1,5 +1,6 @@
 # Load necessary libraries
 library(tidyverse)
+library(ggh4x)
 
 # Read the data
 file_path <- "crawling/data/allmerged_merged_path_analysis.csv"
@@ -88,3 +89,4 @@ plot5 <- ggplot(path_data_parsed, aes(x = forward_bouts, y = backward_bouts, col
 
 
 ggsave("crawling/plotspath/path_bouts_scatter.png", plot5)
+
